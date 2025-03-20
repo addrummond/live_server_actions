@@ -256,7 +256,7 @@ defmodule LiveServerActions.Helpers do
 
         case spec do
           nil ->
-            "#{name}: (...#{typescript_fallback_type}) => Promise<#{typescript_fallback_type}>"
+            "#{name}: (#{1..(arity - 1) |> Enum.map(fn _ -> "#{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
 
           _ ->
             "#{name}: #{function_type_spec_to_ts_type(spec, typescript_fallback_type)}"
