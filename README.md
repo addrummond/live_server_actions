@@ -105,9 +105,10 @@ functionality.
 ### Generated TypeScript .d.ts files
 
 When a server action module `MyApp.FooLive` is compiled, a corresponding
-`LiveServerActions__MyApp.FooLive.d.ts` file is emitted in the `assets` folder.
-This file specifies the methods available for `serverActions.MyApp.FooLive`, and
-the type of each method if the corresponding Elixir function has a type spec.
+`LiveServerActions__MyApp.FooLive.d.ts` file is emitted in the `assets/js`
+folder. This file specifies the methods available for
+`serverActions.MyApp.FooLive`, and the type of each method if the corresponding
+Elixir function has a type spec.
 
 In future the location of the emitted files may be configurable, but for now it
 is not.
