@@ -41,7 +41,7 @@ LiveView project as follows:
 * *(optional)* Add the pattern `LiveServerActions__*.d.ts` to your `.gitignore` if
   you don't want to check in the generated Typescript type definitions.
 * Look at one of the [examples](#examples) to see how to set up your `app.js`
-(e.g. [here](examples/counter/README.md#assetsjsappjs)).
+(e.g. [examples/counter/assets/js/app.js](examples/counter/README.md#assetsjsappjs)).
 
 ## Defining server actions
 
