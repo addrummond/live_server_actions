@@ -48,7 +48,7 @@ defmodule QuotesWeb.QuotesLive do
   defp get_quote(_socket, %{fruit: fruit}) do
     fruit = String.downcase(fruit)
 
-    # artifical delay to simulate server response time
+    # artificial delay to simulate server response time
     :timer.sleep(1000)
 
     if Map.has_key?(@quotes_database, fruit) do
