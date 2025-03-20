@@ -184,8 +184,6 @@ end
   relating to LiveView sockets apply here.
 * If a server action raises an exception, a message is sent to the client
   causing the associated promise to be rejected.
-* The client assumes that a server action has timed out if it does not receive
-  a response within 30 seconds.
 * Type checking is **not** performed on the server side. Adding a type spec for
   a server action prevents Typescript code from calling the action with
   bad arguments, but does not protect against an attacker sending mistyped data.

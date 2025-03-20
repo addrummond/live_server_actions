@@ -1,7 +1,4 @@
-const serverActionTimeoutSeconds = 30;
-
 let pending = {};
-let cleanupIntervalId = null;
 let loaders = {};
 
 export const serverActions = makeServerActionsProxy([]);
@@ -10,8 +7,6 @@ function makeServerActionsProxy(moduleAndFunc) {
   const f = (...args) => {
     if (moduleAndFunc.length <= 1)
       throw new Error(`Server action${moduleAndFunc.map(p => ' ' + p).join('')} called without specifying a module`)
-
-    ensureCleanup();
 
     return new Promise((resolve, reject) => {
       window.dispatchEvent(new CustomEvent("live-server-action", {
@@ -88,25 +83,6 @@ function replyHandler(reply, ref) {
       return reject(new Error(`Server action ${name} failed`));
     resolve(deserializeSpecials(reply.result, reply.specials ?? []));
   }
-}
-
-function ensureCleanup() {
-  if (cleanupIntervalId)
-    return;
-
-  cleanupIntervalId = setInterval(() => {
-    const now = Date.now();
-    for (const [ref, [name, time, _resolve, reject]] of Object.entries(pending)) {
-      if (now - time > serverActionTimeoutSeconds * 1000) {
-        delete pending[ref];
-        setTimeout(() => reject(new Error(`Server action ${name} timed out`), 0));
-      }
-    }
-    if (Object.keys(pending).length === 0) {
-      clearInterval(cleanupIntervalId);
-      cleanupIntervalId = null;
-    }
-  }, 1000 * 60);
 }
 
 function getSerializationSpecials(val, path=[], specials=[]) {
