@@ -198,7 +198,7 @@ To demo the apps:
 * Run `mix deps.get && npm i && mix phx.server`
 * Go to `http://localhost:4000`
 
-### A simple counter updated on the server
+### Example 1: A simple counter updated on the server
 
 This example is a classic React counter demo, but with a counter that is
 stored on the server in an
@@ -209,7 +209,7 @@ returns the new counter value to the client.
 
 See `examples/counter` in this repo and [this readme](examples/counter/README.md).
 
-### Loading a random quotation when a button is pressed
+### Example 2: Loading a random quotation when a button is pressed
 
 This example presents the user with a choice of fruits via a
 dropdown and then, on pressing a button, asks the server to choose a random 
