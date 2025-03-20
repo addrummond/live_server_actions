@@ -114,8 +114,8 @@ is not.
 
 ### Serialization
 
-Arguments to server actions are serialized before being sent to the server or
-returned to the client. At present, the following values are serializable:
+Values are serialized before being passed to server actions or returned to the
+client. At present, the following values are serializable:
 
 * **JavaScript**
   * Numbers
