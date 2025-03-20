@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 const CounterLive = serverActions.CounterWeb.CounterLive;
 
 export const Counter = () => {
-  console.log("RENDER COUNTER");
   const [count, setCount] = useState(null);
 
   // Get the initial count by incrementing by 0
