@@ -1,3 +1,7 @@
+body {
+  padding-top: 2em;
+}
+
 #root button, #root select {
   min-width: 100px;
   width: 30vw;
