@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "live_server_actions": "file:../.."
+  }
+}

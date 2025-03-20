@@ -1,0 +1,7 @@
+{
+  "name": "live_server_actions",
+  "version": "0.0.1",
+  "main": "assets/live_server_actions.js",
+  "private": true,
+  "types": "./assets/live_server_actions.d.ts"
+}

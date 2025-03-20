@@ -1,0 +1,72 @@
+#root button, #root select {
+  min-width: 100px;
+  width: 30vw;
+}
+
+div.quote-chooser {
+  min-width: 100px;
+  width: 30vw;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+div.quote-chooser p:first-child {
+  text-align: center;
+}
+
+div.quote {
+  min-width: 200px;
+  width: 60vw;
+  margin: auto;
+}
+
+div.quote p:first-child {
+  font-size: larger;
+  text-align: center;
+}
+
+div.quote p:last-child {
+  font-size: smaller;
+  text-align: right;
+}
+
+.lds-ring,
+.lds-ring div {
+  box-sizing: border-box;
+}
+.lds-ring {
+  width: 50px;
+  height: 50px;
+  margin: auto;
+  transform: translateX(-50%);
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  margin: 8px;
+  border: 8px solid darkgrey;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: darkgrey transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
