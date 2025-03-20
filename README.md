@@ -192,10 +192,11 @@ end
 
 ## Examples
 
-The `examples` dir contains two simple Phoenix apps using
-live_server_actions. To demo the apps, cd to the app dir and run
-`mix deps.get && npm i && mix phx.server`, then go to
-`http://localhost:4000`.
+The `examples` dir contains two simple Phoenix apps using live_server_actions.
+To demo the apps:
+* Go to the app dir
+* Run `mix deps.get && npm i && mix phx.server`
+* Go to `http://localhost:4000`
 
 ### A simple counter updated on the server
 
