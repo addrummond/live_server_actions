@@ -56,13 +56,14 @@ export function addHooks(hooks) {
         if (! loaders[this.el.dataset.reactComponentName])
           throw new Error(`Component loader not found for '${this.el.dataset.reactComponentName}'`);
         loaders[this.el.dataset.reactComponentName].load(this.el.childNodes[1], JSON.parse(this.el.dataset.reactComponentProps));
-        window.addEventListener("live-server-action", liveServerActionListener(this));
+        this.liveServerActionListener = liveServerActionListener(this);
+        window.addEventListener("live-server-action", this.liveServerActionListener);
       }
     },
     destroyed() {
       if (this.el.dataset.reactComponentName && loaders[this.el.dataset.reactComponentName]) {
         loaders[this.el.dataset.reactComponentName].unload(this.el.childNodes[1]);
-        window.removeEventListener("live-server-action", liveServerActionListener);
+        window.removeEventListener("live-server-action", this.liveServerActionListener);
         window.addEventListener("phx:page-loading-stop", () =>
           loaders[this.el.dataset.reactComponentName].unload(this.el.childNodes[1]), { once: true }
         );
