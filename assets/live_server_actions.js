@@ -38,18 +38,6 @@ export function addHooks(hooks) {
   if (hooks.ServerAction)
     throw new Error("'ServerAction' hook already exists");
 
-  const liveServerActionListener = t => e => {
-    let event = {
-      module_and_func: e.detail.moduleAndFunc,
-      args: e.detail.args,
-    };
-    const specials = e.detail.args.map(a => getSerializationSpecials(a));
-    if (specials.some(s => s.length > 0))
-      event.specials = specials;
-    const eventId = t.pushEvent(`live-server-action`, event, e.detail.replyHandler);
-    e.detail.withEventId(eventId);
-  }
-
   hooks.ServerAction = {
     mounted() {
       if (this.el.dataset.reactComponentName) {
@@ -70,6 +58,18 @@ export function addHooks(hooks) {
       }
     }
   };
+}
+
+const liveServerActionListener = h => e => {
+  let event = {
+    module_and_func: e.detail.moduleAndFunc,
+    args: e.detail.args,
+  };
+  const specials = e.detail.args.map(a => getSerializationSpecials(a));
+  if (specials.some(s => s.length > 0))
+    event.specials = specials;
+  const eventId = h.pushEvent(`live-server-action`, event, e.detail.replyHandler);
+  e.detail.withEventId(eventId);
 }
 
 export function addComponentLoader(name, loader) {
