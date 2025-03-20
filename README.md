@@ -213,7 +213,7 @@ See `examples/counter` in this repo and [this readme](examples/counter/README.md
 ### Example 2: loading a random quotation when a button is pressed
 
 This example presents the user with a choice of fruits via a
-dropdown and then, on pressing a button, asks the server to choose a random 
+dropdown, and then, on pressing a button, asks the server to choose a random 
 inspirational quote about the chosen fruit.
 
 See `examples/quotes` in this repo and [this readme](examples/quotes/README.md).
