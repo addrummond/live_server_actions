@@ -211,7 +211,7 @@ returns the new counter value to the client.
 
 See `examples/counter` in this repo and [this readme](examples/counter/README.md).
 
-### Example 2: loading a random quotation when a button is pressed
+### Example 2: loading a random quote when a button is pressed
 
 This example presents the user with a choice of fruits via a
 dropdown. When a button is pressed, a server action is called which returns

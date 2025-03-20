@@ -1,8 +1,8 @@
 # Quotes
 
-This example presents the user with a choice of fruits via a
-dropdown and then, on pressing a button, asks the server to choose a random 
-inspirational quote about the chosen fruit.
+This example presents the user with a choice of fruits via a dropdown. When a
+button is pressed, a server action is called which returns an inspirational
+quote about the chosen fruit.
 
 ## assets/js/quotes.tsx
 ```tsx
