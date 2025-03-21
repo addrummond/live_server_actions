@@ -15,7 +15,7 @@ function makeServerActionsProxy(moduleAndFunc) {
           args,
           replyHandler,
           withEventId(eventId) {
-            pending[eventId] = [moduleAndFunc[moduleAndFunc.length-1], Date.now(), resolve, reject];
+            pending[eventId] = [moduleAndFunc[moduleAndFunc.length-1], resolve, reject];
           }
         },
       }));
@@ -76,7 +76,7 @@ export function addComponentLoader(name, loader) {
 
 function replyHandler(reply, ref) {
   if (pending[ref]) {
-    const [name, _time, resolve, reject] = pending[ref];
+    const [name, resolve, reject] = pending[ref];
     delete pending[ref];
 
     if (reply.error)
