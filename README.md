@@ -190,9 +190,64 @@ end
 * Calling a server action in a different LiveView module will give rise to a
   runtime error on the server.
 
+## Embedding a React component in your LiveView
+
+In your LiveView:
+
+```elixir
+defmodule MyAppWeb.FooLive do
+  use Phoenix.LiveView
+  use LiveServerActions
+
+  alias LiveServerActions.Components
+
+  def render(assigns) do
+    ~H"""
+    <Components.react_component id="my-react-component-id" component="MyReactComponent" />
+    """
+  end
+end
+```
+
+In your `app.js`:
+
+```javascript
+import { addHooks, addComponentLoader } from "live_server_actions";
+import { MyReactComponent } from "./my_react_component";
+
+...
+addHooks(Hooks);
+...
+
+// For React 19. Change as appropriate for your React version.
+class ReactComponentLoader {
+  constructor(component) {
+    this.component = component;
+  }
+
+  load(rootElem, props) {
+    this.root = createRoot(rootElem);
+    Promise.resolve(this.component).then(c =>
+      this.root.render(React.createElement(c, props))
+    );
+  }
+
+  unload(_rootElem) {
+    this.root.unmount();
+  }
+}
+
+// The first argument to this function corresponds to the value
+// of the 'component' attr of the Components.react_component component.
+addComponentLoader("MyReactComponent", new ReactComponentLoader(MyReactComponent));
+
+// load this way if you want to load the component dynamically
+//addComponentLoader("MyReactComponent", new ReactComponentLoader(import("./my_react_component").then(m => m.MyReactComponent)));
+```
+
 ## Examples
 
-The `examples` dir contains two simple Phoenix apps using live_server_actions.
+The `examples` dir contains two simple Phoenix apps using LiveServerActions.
 To demo the apps:
 * Go to the app dir
 * Run `mix deps.get && npm i && mix phx.server`
