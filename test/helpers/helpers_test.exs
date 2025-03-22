@@ -2,7 +2,7 @@ defmodule LiveServerActions.HelpersTest do
   use ExUnit.Case
 
   alias LiveServerActions.Helpers
-  alias LiveServerActions.TestSupport.MyServact
+  alias LiveServerActions.TestSupport.{MyServact, TypeData}
 
   # see LiveServerActions.HelpersTest.Typedata module
   @type_to_ts_type_expectations [
@@ -32,7 +32,7 @@ defmodule LiveServerActions.HelpersTest do
     test "table" do
       for {type, arity, expected_args, expected_ret} <- @type_to_ts_type_expectations do
         {actual_args, actual_ret} =
-          Helpers.get_function_arg_and_ret_types(LiveServerActions.TestData.TypeData, type, arity)
+          Helpers.get_function_arg_and_ret_types(TypeData, type, arity)
 
         assert LiveServerActions.Helpers.type_to_ts_type(actual_ret, :any) == expected_ret
 

@@ -1,4 +1,4 @@
-defmodule LiveServerActions.TestData.TypeData do
+defmodule LiveServerActions.TestSupport.TypeData do
   @spec t_string_string_t() :: String.t()
   def t_string_string_t(), do: nil
 
