@@ -15,10 +15,10 @@ defmodule LiveServerActions.Helpers.Unicode do
   end
 
   defp id_start_unicode?(ch) do
-    idx = div(ch, 8)
+    idx = div(div(ch, 8), 64)
     chunk = idx_tuple_or(trie_start(), idx, 0)
-    offset = div(chunk * 64, 2) + rem(div(ch, 8), 64)
-    :erlang.band(1, :erlang.bsr(elem(leaf(), offset), rem(ch, 8))) != 0
+    offset = chunk * 32 + rem(div(ch, 8), 64)
+    :erlang.band(1, wrapping_shr32(elem(leaf(), offset), rem(ch, 8))) != 0
   end
 
   def id_continue?(ch) do
@@ -30,10 +30,10 @@ defmodule LiveServerActions.Helpers.Unicode do
   end
 
   defp id_continue_unicode?(ch) do
-    idx = div(ch, 8)
+    idx = div(div(ch, 8), 64)
     chunk = idx_tuple_or(trie_continue(), idx, 0)
-    offset = div(chunk * 64, 2) + rem(div(ch, 8), 64)
-    :erlang.band(1, :erlang.bsr(elem(leaf(), offset), rem(ch, 8))) != 0
+    offset = chunk * 32 + rem(div(ch, 8), 64)
+    :erlang.band(1, wrapping_shr32(elem(leaf(), offset), rem(ch, 8))) != 0
   end
 
   defp idx_tuple_or(tuple, i, default) do
@@ -42,6 +42,11 @@ defmodule LiveServerActions.Helpers.Unicode do
     else
       default
     end
+  end
+
+  # See https://github.com/rust-lang/rust/blob/db687889a5833381b8b02738a1af93a09a97ba16/library/core/src/num/uint_macros.rs#L2317
+  def wrapping_shr32(val, shift) do
+    :erlang.bsr(val, :erlang.band(shift, 31))
   end
 
   # mix format fluffs up formatting of big tuples, but there appears to be no

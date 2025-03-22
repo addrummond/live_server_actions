@@ -2,6 +2,7 @@ defmodule LiveServerActions.HelpersTest do
   use ExUnit.Case
 
   alias LiveServerActions.Helpers
+  alias LiveServerActions.TestSupport.MyServact
 
   # see LiveServerActions.HelpersTest.Typedata module
   @type_to_ts_type_expectations [
@@ -86,6 +87,60 @@ defmodule LiveServerActions.HelpersTest do
       ]
 
       assert Helpers.get_serialization_specials(val) == expected_specials
+    end
+  end
+
+  @expected_ts_defs_output """
+  declare module "live_server_actions" {
+    namespace ServerActions.LiveServerActions {
+      interface TestSupport {
+        MyServact: ServerActions.LiveServerActions.TestSupport.MyServact;
+      }
+    }
+    
+    namespace ServerActions.LiveServerActions.TestSupport {
+      interface MyServact {
+        pub_no_typespec: (any, any) => Promise<any>
+        priv_no_typespec: (any, any) => Promise<any>
+        pub_with_typespec: ({fruit: string, another_key: {foo: number, bar: string}}) => Promise<({error: string} | {quote: string, author: string, year: number})>
+        priv_with_typespec: ({fruit: string}) => Promise<({error: string} | {quote: string, author: string, year: number})>
+        _日本語識別子: (any) => Promise<any>
+      }
+    }
+    
+    namespace ServerActions {
+      interface LiveServerActions {
+        TestSupport: ServerActions.LiveServerActions.TestSupport;
+      }
+    }
+    interface ServerActions {
+      LiveServerActions: ServerActions.LiveServerActions;
+    }
+  }
+  """
+
+  describe "output_ts_definitions/6" do
+    test "no typespecs" do
+      # In the real code the third arg would be the bytecode as we wouldn't be
+      # able to look up things via the module name at this stage.
+      {fname, contents} =
+        Helpers.output_ts_definitions(
+          MyServact,
+          [
+            {:pub_no_typespec, {3, :any, :def}},
+            {:priv_no_typespec, {3, :any, :defp}},
+            {:pub_with_typespec, {2, :any, :def}},
+            {:priv_with_typespec, {2, :any, :defp}},
+            {:_日本語識別子, {2, :any, :def}}
+          ],
+          MyServact,
+          "assets",
+          :any,
+          write!: fn name, content -> {name, content} end
+        )
+
+      assert {"assets/js/LiveServerActions__Elixir.LiveServerActions.TestSupport.MyServact.d.ts",
+              String.trim(@expected_ts_defs_output)} == {fname, String.trim(contents)}
     end
   end
 

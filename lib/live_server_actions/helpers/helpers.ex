@@ -232,10 +232,13 @@ defmodule LiveServerActions.Helpers do
   def output_ts_definitions(
         module,
         server_actions,
-        bytecode,
+        module_or_bytecode,
         assets_dir,
-        typescript_global_fallback_type
+        typescript_global_fallback_type,
+        opts \\ []
       ) do
+    write! = opts[:write!] || (&File.write!/2)
+
     # TODO should be customizable
     tsdefs_dir = Path.join(assets_dir, "js")
 
@@ -248,7 +251,7 @@ defmodule LiveServerActions.Helpers do
           typescript_fallback_type ||
             get_typescript_fallback_type(typescript_global_fallback_type)
 
-        spec = get_function_spec(bytecode, name, arity)
+        spec = get_function_spec(module_or_bytecode, name, arity)
 
         if not valid_js_identifier?(name) do
           raise "Function name #{inspect(name)} is not a valid JS identifier"
@@ -296,7 +299,7 @@ defmodule LiveServerActions.Helpers do
     #   export const serverActions : ServerActions;
     #   interface ServerActions { }
 
-    File.write!(
+    write!.(
       Path.join(tsdefs_dir, "#{@tsdefs_prefix}#{module}.d.ts"),
       """
       declare module "live_server_actions" {
