@@ -49,9 +49,6 @@ defmodule LiveServerActions.Helpers.Unicode do
     :erlang.bsr(val, :erlang.band(shift, 31))
   end
 
-  # mix format fluffs up formatting of big tuples, but there appears to be no
-  # reasonable way to disable it for a section of the file...
-
   defp ascii_start,
     do: <<
       0,
