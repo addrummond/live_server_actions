@@ -8,7 +8,7 @@ defmodule LiveServerActions.Helpers.Unicode do
 
   def id_start?(ch) do
     if ch < 128 do
-      elem(ascii_start(), ch) == 1
+      :binary.at(ascii_start(), ch) == 1
     else
       id_start_unicode?(ch)
     end
@@ -16,14 +16,14 @@ defmodule LiveServerActions.Helpers.Unicode do
 
   defp id_start_unicode?(ch) do
     idx = div(div(ch, 8), 64)
-    chunk = idx_tuple_or(trie_start(), idx, 0)
+    chunk = idx_binary_or(trie_start(), idx, 0)
     offset = chunk * 32 + rem(div(ch, 8), 64)
-    :erlang.band(1, wrapping_shr32(elem(leaf(), offset), rem(ch, 8))) != 0
+    :erlang.band(1, wrapping_shr32(:binary.at(leaf(), offset), rem(ch, 8))) != 0
   end
 
   def id_continue?(ch) do
     if ch < 128 do
-      elem(ascii_continue(), ch) == 1
+      :binary.at(ascii_continue(), ch) == 1
     else
       id_continue_unicode?(ch)
     end
@@ -31,14 +31,14 @@ defmodule LiveServerActions.Helpers.Unicode do
 
   defp id_continue_unicode?(ch) do
     idx = div(div(ch, 8), 64)
-    chunk = idx_tuple_or(trie_continue(), idx, 0)
+    chunk = idx_binary_or(trie_continue(), idx, 0)
     offset = chunk * 32 + rem(div(ch, 8), 64)
-    :erlang.band(1, wrapping_shr32(elem(leaf(), offset), rem(ch, 8))) != 0
+    :erlang.band(1, wrapping_shr32(:binary.at(leaf(), offset), rem(ch, 8))) != 0
   end
 
-  defp idx_tuple_or(tuple, i, default) do
-    if i < tuple_size(tuple) do
-      elem(tuple, i)
+  defp idx_binary_or(bin, i, default) do
+    if i < byte_size(bin) do
+      :binary.at(bin, i)
     else
       default
     end
@@ -53,7 +53,7 @@ defmodule LiveServerActions.Helpers.Unicode do
   # reasonable way to disable it for a section of the file...
 
   defp ascii_start,
-    do: {
+    do: <<
       0,
       0,
       0,
@@ -182,10 +182,10 @@ defmodule LiveServerActions.Helpers.Unicode do
       0,
       0,
       0
-    }
+    >>
 
   defp ascii_continue,
-    do: {
+    do: <<
       0,
       0,
       0,
@@ -314,10 +314,10 @@ defmodule LiveServerActions.Helpers.Unicode do
       0,
       0,
       0
-    }
+    >>
 
   defp trie_start,
-    do: {
+    do: <<
       0x04,
       0x0B,
       0x0F,
@@ -720,10 +720,10 @@ defmodule LiveServerActions.Helpers.Unicode do
       0x05,
       0x05,
       0xF2
-    }
+    >>
 
   defp trie_continue,
-    do: {
+    do: <<
       0x08,
       0x0D,
       0x11,
@@ -2517,10 +2517,10 @@ defmodule LiveServerActions.Helpers.Unicode do
       0x00,
       0x00,
       0xD7
-    }
+    >>
 
   defp leaf,
-    do: {
+    do: <<
       0x00,
       0x00,
       0x00,
@@ -10393,5 +10393,5 @@ defmodule LiveServerActions.Helpers.Unicode do
       0x00,
       0x00,
       0x00
-    }
+    >>
 end
