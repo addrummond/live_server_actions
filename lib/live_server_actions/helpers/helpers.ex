@@ -44,8 +44,6 @@ defmodule LiveServerActions.Helpers do
         args =
           case get_function_arg_and_ret_types(current_module, function, arity) do
             {[_socket | arg_types], _} ->
-              get_function_arg_and_ret_types(current_module, function, arity)
-
               Enum.map(Enum.zip(args, arg_types), fn {arg, arg_type} ->
                 mung(arg, arg_type)
               end)
@@ -94,7 +92,7 @@ defmodule LiveServerActions.Helpers do
   end
 
   def get_function_arg_and_ret_types(module_or_bytecode, function, arity) do
-    case get_function_spec(module_or_bytecode, function, arity) do
+    case get_cached_function_spec(module_or_bytecode, function, arity) do
       nil ->
         nil
 
@@ -365,6 +363,18 @@ defmodule LiveServerActions.Helpers do
       Map.put(map, :specials, specials)
     else
       map
+    end
+  end
+
+  defp get_cached_function_spec(module, function, arity) when is_atom(module) do
+    case :ets.lookup(:live_server_actions_type_spec_lookup, {module, function, arity}) do
+      [{_, spec}] ->
+        spec
+
+      [] ->
+        spec = get_function_spec(module, function, arity)
+        :ets.insert(:live_server_actions_type_spec_lookup, {{module, function, arity}, spec})
+        spec
     end
   end
 
