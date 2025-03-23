@@ -45,7 +45,6 @@ export function addHooks(hooks) {
     },
     destroyed() {
       if (this.el.dataset.reactComponentName && loaders[this.el.dataset.reactComponentName]) {
-        loaders[this.el.dataset.reactComponentName].unload(this.el.childNodes[1]);
         window.removeEventListener("live-server-action", this.liveServerActionListener);
         window.addEventListener("phx:page-loading-stop", () =>
           loaders[this.el.dataset.reactComponentName].unload(this.el.childNodes[1]), { once: true }
