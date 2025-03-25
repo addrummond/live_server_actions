@@ -99,11 +99,15 @@ function getSerializationSpecials(val, path=[], specials=[]) {
 }
 
 function deserializeSpecials(val, specials) {
-  for (const {path, type} of specials) {
+  outer: for (const {path, type} of specials) {
     let v = val;
     let upd = f => val = f(val);
     for (const p of path) {
       upd = f => v[p] = f(v[p]);
+      if (! {}.hasOwnProperty.call(v, p)) { // hasOwnProperty works for array indices too
+        console.warn(`Path ${JSON.stringify(path)} not found in value when deserializing specials`);
+        continue outer;
+      }
       v = v[p];
     }
     switch (type) {
