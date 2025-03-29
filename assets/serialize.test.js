@@ -86,7 +86,7 @@ describe("deserializeSpecials", () => {
     const result = deserializeSpecials({foo: 1, bar: date1, amp: [1, date2, 3]}, specials);
     expect(result.bar).toEqual(new Date(date1));
     expect(result.amp[1]).toEqual(new Date(date2));
-    expect(consoleWarnMock).toHaveBeenLastCalledWith('Path "invalid" not found in value when deserializing specials');
+    expect(consoleWarnMock).toHaveBeenCalledExactlyOnceWith('Path "invalid" not found in value when deserializing specials');
   });
 
   test("ignores unrecognized serialization types, processes other valid deserializations, and logs warning", () => {
@@ -96,6 +96,6 @@ describe("deserializeSpecials", () => {
     const result = deserializeSpecials({foo: 1, bar: date1, amp: [1, date2, 3]}, specials);
     expect(result.bar).toEqual(new Date(date1));
     expect(result.amp[1]).toEqual(date2);
-    expect(consoleWarnMock).toHaveBeenLastCalledWith('Unknown special type invalid');
+    expect(consoleWarnMock).toHaveBeenCalledExactlyOnceWith('Unknown special type invalid');
   });
 })
