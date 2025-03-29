@@ -18,7 +18,7 @@ Inspired by Next.js
   * Use with **any React version** and **any JS bundler**.
   * Adds just ~150 lines of unminified JS to your client bundle.
   * No generated JS code.
-  * No npm dependencies.
+  * No (non-dev) npm dependencies.
 
 ## Setup
 
