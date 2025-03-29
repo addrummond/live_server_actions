@@ -30,7 +30,7 @@ export function deserializeSpecials(val, specials) {
         upd(d => new Date(d));
         break;
       default:
-        throw new Error(`Unknown special type ${type}`);
+        console.warn(`Unknown special type ${type}`);
     }
   }
   return val;

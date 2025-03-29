@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { deserializeSpecials, getSerializationSpecials } from "./serialize";
 
 describe("getSerializationSpecials", () => {
@@ -43,6 +43,12 @@ describe("getSerializationSpecials", () => {
 });
 
 describe("deserializeSpecials", () => {
+  const consoleWarnMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+  beforeEach(() => {
+    consoleWarnMock.mockReset();
+  })  
+
   test("should deserialize a Date object", () => {
     const date = '2025-03-29T11:53:52.177Z';
     const specials = [{ path: [], type: 'Date' }];
@@ -71,5 +77,25 @@ describe("deserializeSpecials", () => {
     const result = deserializeSpecials({foo: 1, bar: date1, amp: [1, date2, 3]}, specials);
     expect(result.bar).toEqual(new Date(date1));
     expect(result.amp[1]).toEqual(new Date(date2));
+  });
+
+  test("ignores nonexistent paths, processes other valid paths, and logs warning", () => {
+    const date1 = '2025-03-29T11:53:52.177Z';
+    const date2 = '2025-03-29T12:04:53.267Z';
+    const specials = [{ path: ["bar"], type: 'Date' }, { path: ["amp", 1], type: 'Date' }, { path: "invalid", type: 'Date' }];
+    const result = deserializeSpecials({foo: 1, bar: date1, amp: [1, date2, 3]}, specials);
+    expect(result.bar).toEqual(new Date(date1));
+    expect(result.amp[1]).toEqual(new Date(date2));
+    expect(consoleWarnMock).toHaveBeenLastCalledWith('Path "invalid" not found in value when deserializing specials');
+  });
+
+  test("ignores unrecognized serialization types, processes other valid deserializations, and logs warning", () => {
+    const date1 = '2025-03-29T11:53:52.177Z';
+    const date2 = '2025-03-29T12:04:53.267Z';
+    const specials = [{ path: ["bar"], type: 'Date' }, { path: ["amp", 1], type: 'invalid' }];
+    const result = deserializeSpecials({foo: 1, bar: date1, amp: [1, date2, 3]}, specials);
+    expect(result.bar).toEqual(new Date(date1));
+    expect(result.amp[1]).toEqual(date2);
+    expect(consoleWarnMock).toHaveBeenLastCalledWith('Unknown special type invalid');
   });
 })
