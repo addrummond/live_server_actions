@@ -16,9 +16,7 @@ Inspired by Next.js
 * Server actions are compatible with `useActionState`.
 * Lightweight and dependency free:
   * Use with **any React version** and **any JS bundler**.
-  * Adds just a
-    **[tiny bit of JavaScript](https://github.com/addrummond/live_server_actions/blob/main/assets/live_server_actions.js)**
-    to your client bundle.
+  * Adds just ~150 lines of unminified JS to your client bundle.
   * No generated JS code.
   * No npm dependencies.
 
@@ -33,7 +31,7 @@ LiveView project as follows:
 ```
 * Add the following dependency to your `package.json`:
 ```json
-"live_server_actions": "git+https://github.com/addrummond/live_server_actions.git#main"
+"live_server_actions": "file:deps/live_server_actions"
 ```
 * `mix deps.get && npm i`.
 * Ensure that you have a `tsconfig.json` file in `assets` if you want to use

@@ -1,3 +1,5 @@
+import { deserializeSpecials, getSerializationSpecials } from "./serialize";
+
 let pending = {};
 let loaders = {};
 
@@ -82,41 +84,4 @@ function replyHandler(reply, ref) {
       return reject(new Error(`Server action ${name} failed`));
     resolve(deserializeSpecials(reply.result, reply.specials ?? []));
   }
-}
-
-function getSerializationSpecials(val, path=[], specials=[]) {
-  if (val instanceof Date) {
-    specials.push({path, type: 'Date'});
-  } else if (Array.isArray(val)) {
-    for (let i = 0; i < val.length; i++)
-      getSerializationSpecials(val[i], [...path, i], specials);
-  } else if (typeof val === 'object') {
-    for (const [key, value] of Object.entries(val))
-      getSerializationSpecials(value, [...path, key], specials);
-  }
-
-  return specials;
-}
-
-function deserializeSpecials(val, specials) {
-  outer: for (const {path, type} of specials) {
-    let v = val;
-    let upd = f => val = f(val);
-    for (const p of path) {
-      upd = f => v[p] = f(v[p]);
-      if (! {}.hasOwnProperty.call(v, p)) { // hasOwnProperty works for array indices too
-        console.warn(`Path ${JSON.stringify(path)} not found in value when deserializing specials`);
-        continue outer;
-      }
-      v = v[p];
-    }
-    switch (type) {
-      case 'Date':
-        upd(d => new Date(d));
-        break;
-      default:
-        throw new Error(`Unknown special type ${type}`);
-    }
-  }
-  return val;
 }
