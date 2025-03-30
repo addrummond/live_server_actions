@@ -11,8 +11,13 @@ defmodule LiveServerActions.Helpers do
         args,
         specials,
         socket,
-        call_private_live_server_action
+        call_private_live_server_action,
+        opts \\ []
       ) do
+    # allow this to be overridden in tests
+    get_function_arg_and_ret_types =
+      opts[:get_function_arg_and_ret_types] || (&get_function_arg_and_ret_types/3)
+
     module = module_and_func |> Enum.drop(-1) |> Enum.join(".")
 
     if "Elixir.#{module}" != "#{current_module}" do
@@ -42,7 +47,7 @@ defmodule LiveServerActions.Helpers do
         args = deserialize_specials(args, specials)
 
         args =
-          case get_function_arg_and_ret_types(current_module, function, arity) do
+          case get_function_arg_and_ret_types.(current_module, function, arity) do
             {[_socket | arg_types], _} ->
               Enum.map(Enum.zip(args, arg_types), fn {arg, arg_type} ->
                 mung(arg, arg_type)

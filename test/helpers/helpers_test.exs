@@ -144,5 +144,180 @@ defmodule LiveServerActions.HelpersTest do
     end
   end
 
-  # TODO: Test coverage could be, err, a little more comprehensive.
+  describe "handle_event/7" do
+    test "a simple public server action returns the expected value" do
+      defmodule MyServact1 do
+        def a_server_action(_socket, _arg1) do
+          "return value"
+        end
+      end
+
+      assert {:reply, %{result: "return value"}, %Phoenix.LiveView.Socket{}} =
+               Helpers.handle_event(
+                 MyServact1,
+                 %{
+                   a_server_action: {2, :any, :def}
+                 },
+                 ["LiveServerActions.HelpersTest.MyServact1", "a_server_action"],
+                 ["arg1"],
+                 [[]],
+                 %Phoenix.LiveView.Socket{},
+                 fn _ -> raise "should not be called" end,
+                 get_function_arg_and_ret_types: fn _, _, _ -> nil end
+               )
+    end
+
+    test "a simple private server action returns the expected value" do
+      defmodule MyServact2 do
+        # No implementation here because we can't call a private function in
+        # this module from test code outside the module. Instead we just fake
+        # it in the implementation of call_private_live_server_action given to
+        # handle_event.
+      end
+
+      assert {:reply, %{result: "return value"}, %Phoenix.LiveView.Socket{}} =
+               Helpers.handle_event(
+                 MyServact2,
+                 %{
+                   a_server_action: {2, :any, :defp}
+                 },
+                 ["LiveServerActions.HelpersTest.MyServact2", "a_server_action"],
+                 ["arg1"],
+                 [[]],
+                 %Phoenix.LiveView.Socket{},
+                 fn :a_server_action, _args ->
+                   # In reality, this would be a call to
+                   # __live_server_actions_call_private_server_action
+                   "return value"
+                 end,
+                 get_function_arg_and_ret_types: fn _, _, _ -> nil end
+               )
+    end
+
+    test "handles {socket, x} return values by stripping socket and passing it through to {:reply, ...} tuple" do
+      defmodule MyServact3 do
+        def a_server_action(socket, _arg1) do
+          {%{socket | assigns: %{my: "assigns"}}, "return value"}
+        end
+      end
+
+      assert {:reply, %{result: "return value"},
+              %Phoenix.LiveView.Socket{assigns: %{my: "assigns"}}} =
+               Helpers.handle_event(
+                 MyServact3,
+                 %{
+                   a_server_action: {2, :any, :def}
+                 },
+                 ["LiveServerActions.HelpersTest.MyServact3", "a_server_action"],
+                 ["arg1"],
+                 [[]],
+                 %Phoenix.LiveView.Socket{},
+                 fn _ -> raise "should not be called" end,
+                 get_function_arg_and_ret_types: fn _, _, _ -> nil end
+               )
+    end
+
+    test "correctly deserializes a date argument" do
+      defmodule MyServact4 do
+        def a_server_action(_socket, some_date) do
+          some_date
+        end
+      end
+
+      assert {:reply, %{result: ~U[2025-03-18 19:13:34.026831Z]}, %Phoenix.LiveView.Socket{}} =
+               Helpers.handle_event(
+                 MyServact4,
+                 %{
+                   a_server_action: {2, :any, :def}
+                 },
+                 ["LiveServerActions.HelpersTest.MyServact4", "a_server_action"],
+                 ["2025-03-18T19:13:34.026831Z"],
+                 [[%{"type" => "Date", "path" => []}]],
+                 %Phoenix.LiveView.Socket{},
+                 fn _ -> raise "should not be called" end,
+                 get_function_arg_and_ret_types: fn _, _, _ -> nil end
+               )
+    end
+
+    test "correctly deserializes a date argument and a nested date value" do
+      defmodule MyServact5 do
+        def a_server_action(_socket, some_date, %{"dates" => [date]}) do
+          [some_date, date]
+        end
+      end
+
+      assert {:reply,
+              %{result: [~U[2025-03-18 19:13:34.026831Z], ~U[2023-03-18 19:13:34.026831Z]]},
+              %Phoenix.LiveView.Socket{}} =
+               Helpers.handle_event(
+                 MyServact5,
+                 %{
+                   a_server_action: {3, :any, :def}
+                 },
+                 ["LiveServerActions.HelpersTest.MyServact5", "a_server_action"],
+                 ["2025-03-18T19:13:34.026831Z", %{"dates" => ["2023-03-18T19:13:34.026831Z"]}],
+                 [
+                   [%{"type" => "Date", "path" => []}],
+                   [%{"type" => "Date", "path" => ["dates", 0]}]
+                 ],
+                 %Phoenix.LiveView.Socket{},
+                 fn _ -> raise "should not be called" end,
+                 get_function_arg_and_ret_types: fn _, _, _ -> nil end
+               )
+    end
+
+    test "raises error if server action is of a different module" do
+      defmodule MyServact6 do
+        def a_server_action(_socket, _arg1) do
+          "return value"
+        end
+      end
+
+      defmodule MyServact7 do
+        def a_different_server_action(_socket, _arg1) do
+          "return value"
+        end
+      end
+
+      assert_raise RuntimeError, "Wrong module for server action", fn ->
+        Helpers.handle_event(
+          MyServact6,
+          %{
+            a_server_action: {2, :any, :def}
+          },
+          ["LiveServerActions.HelpersTest.MyServact7", "a_server_action"],
+          ["arg1"],
+          [[]],
+          %Phoenix.LiveView.Socket{},
+          fn _ -> raise "should not be called" end,
+          get_function_arg_and_ret_types: fn _, _, _ -> nil end
+        )
+      end
+    end
+
+    test "raises error if server action is given wrong number of args" do
+      defmodule MyServact8 do
+        def a_server_action(_socket, _arg1) do
+          "return value"
+        end
+      end
+
+      assert_raise RuntimeError,
+                   "Wrong number of arguments for server action a_server_action",
+                   fn ->
+                     Helpers.handle_event(
+                       MyServact8,
+                       %{
+                         a_server_action: {2, :any, :def}
+                       },
+                       ["LiveServerActions.HelpersTest.MyServact8", "a_server_action"],
+                       ["arg1", "arg2"],
+                       [[]],
+                       %Phoenix.LiveView.Socket{},
+                       fn _ -> raise "should not be called" end,
+                       get_function_arg_and_ret_types: fn _, _, _ -> nil end
+                     )
+                   end
+    end
+  end
 end
