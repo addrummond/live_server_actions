@@ -75,8 +75,7 @@ defmodule LiveServerActions do
         default_d_ts_output_dir =
           Path.join([project_dir, "assets", "js"])
 
-        d_ts_output_dir_option =
-          Module.get_attribute(__MODULE__, :__live_server_actions_d_ts_output_dir)
+        d_ts_output_dir_option = @__live_server_actions_d_ts_output_dir
 
         d_ts_output_dir =
           cond do
@@ -94,8 +93,7 @@ defmodule LiveServerActions do
           end
 
         if d_ts_output_dir != false do
-          get_d_ts_filename_option =
-            Module.get_attribute(__MODULE__, :__live_server_actions_get_d_ts_filename)
+          get_d_ts_filename_option = @__live_server_actions_get_d_ts_filename
 
           get_d_ts_filename =
             get_d_ts_filename_option ||
