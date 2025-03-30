@@ -38,6 +38,10 @@ defmodule LiveServerActions do
           Helpers.get_typescript_fallback_type(typescript_fallback_type_attr)
         end
 
+      if Map.get(Module.get_attribute(module, :__live_server_actions, %{}), name) do
+        raise Helpers.make_duplicate_live_action_definition_error(module, name)
+      end
+
       Module.put_attribute(
         module,
         :__live_server_actions,

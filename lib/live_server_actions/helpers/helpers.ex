@@ -221,6 +221,17 @@ defmodule LiveServerActions.Helpers do
     """
   end
 
+  # Ditto
+  def make_duplicate_live_action_definition_error(module_name, function_name) do
+    """
+    LiveServerActions assumes that server action names are unique within a
+    module. The server action '#{function_name}' is defined multiple times in
+    the module '#{module_name}'. Even if both definitions have the same arity,
+    LiveServerActions does not support this because it leads to complications
+    with type specs.
+    """
+  end
+
   def get_typescript_fallback_type(:any), do: "any"
   def get_typescript_fallback_type(:unknown), do: "unknown"
 
