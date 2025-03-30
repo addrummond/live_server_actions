@@ -108,8 +108,30 @@ Elixir function has a type spec.
 
 Emission of `.d.ts` files only occurs when `Mix.env() == :dev`.
 
-In future the location of the emitted files may be configurable, but for now it
-is not.
+You can pass the `d_ts_output_dir` option to `use LiveServerActions` to change
+the output directory for `.d.ts` files:
+
+```elixir
+use LiveServerActions, d_ts_output_dir: "/foo/bar"
+
+# set a path relative to the project root dir
+use LiveServerActions, d_ts_output_dir: fn root -> Path.join([root, "assets", "js"]) end
+```
+
+You can also customize the full path and filename of each individual `.d.ts`
+file based on the module name:
+
+```elixir
+use LiveServerActions, get_d_ts_filename: fn output_dir, module_name ->
+  Path.join([output_dir, "MyPrefix__#{module_name}.d.ts"])
+end
+```
+
+The second parameter to the function is the module name as a string with the
+`"Elixir."` prefix removed.
+
+If you want to disable generation of `.d.ts` files, you can set
+`d_ts_output_dir` to `false`.
 
 ### Serialization
 

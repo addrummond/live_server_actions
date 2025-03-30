@@ -4,8 +4,6 @@ defmodule LiveServerActions.Helpers do
   require Logger
   alias LiveServerActions.Helpers.Unicode
 
-  @tsdefs_prefix "LiveServerActions__"
-
   def handle_event(
         current_module,
         live_server_actions,
@@ -249,14 +247,11 @@ defmodule LiveServerActions.Helpers do
         module,
         server_actions,
         module_or_bytecode,
-        assets_dir,
+        tsdefs_filename,
         typescript_global_fallback_type,
         opts \\ []
       ) do
     write! = opts[:write!] || (&File.write!/2)
-
-    # TODO should be customizable
-    tsdefs_dir = Path.join(assets_dir, "js")
 
     modlist = Module.split(module)
 
@@ -316,7 +311,7 @@ defmodule LiveServerActions.Helpers do
     #   interface ServerActions { }
 
     write!.(
-      Path.join(tsdefs_dir, "#{@tsdefs_prefix}#{module}.d.ts"),
+      tsdefs_filename,
       """
       declare module "live_server_actions" {
         #{indent(2, tsdef)}

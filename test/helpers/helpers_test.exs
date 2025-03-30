@@ -137,7 +137,7 @@ defmodule LiveServerActions.HelpersTest do
             {:_日本語識別子, {2, :any, :def}}
           ],
           MyServact,
-          "assets",
+          "assets/js/LiveServerActions__Elixir.LiveServerActions.TestSupport.MyServact.d.ts",
           :any,
           write!: fn name, content -> {name, content} end
         )

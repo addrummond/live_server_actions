@@ -6,6 +6,8 @@ defmodule LiveServerActions do
   `@server_action true`.
   """
 
+  @tsdefs_prefix "LiveServerActions__"
+
   alias LiveServerActions.Helpers
 
   defmacro __using__(args \\ []) do
@@ -22,6 +24,9 @@ defmodule LiveServerActions do
                                                         args[:typescript_fallback_type] || :any
                                                       )
       @__live_server_actions %{}
+
+      @__live_server_actions_d_ts_output_dir unquote(args[:d_ts_output_dir])
+      @__live_server_actions_get_d_ts_filename unquote(args[:get_d_ts_filename])
 
       # make sure this is defined at least once with a guard that won't match
       # anything
@@ -65,16 +70,50 @@ defmodule LiveServerActions do
     quote do
       if Mix.env() == :dev do
         # TODO hack
-        assets_dir =
-          Path.join(Mix.Project.build_path() |> Path.dirname() |> Path.dirname(), "assets")
+        project_dir = Mix.Project.build_path() |> Path.dirname() |> Path.dirname()
 
-        Helpers.output_ts_definitions(
-          __MODULE__,
-          @__live_server_actions,
-          unquote(bytecode),
-          assets_dir,
-          @__live_server_actions_typescript_fallback_type
-        )
+        default_d_ts_output_dir =
+          Path.join([project_dir, "assets", "js"])
+
+        d_ts_output_dir_option =
+          Module.get_attribute(__MODULE__, :__live_server_actions_d_ts_output_dir)
+
+        d_ts_output_dir =
+          cond do
+            is_function(d_ts_output_dir_option, 1) ->
+              "" <> d_ts_output_dir_option.(project_dir)
+
+            is_binary(d_ts_output_dir_option) ->
+              d_ts_output_dir_option
+
+            d_ts_output_dir_option == false ->
+              false
+
+            d_ts_output_dir_option == nil ->
+              default_d_ts_output_dir
+          end
+
+        if d_ts_output_dir != false do
+          get_d_ts_filename_option =
+            Module.get_attribute(__MODULE__, :__live_server_actions_get_d_ts_filename)
+
+          get_d_ts_filename =
+            get_d_ts_filename_option ||
+              fn output_dir, module_name ->
+                Path.join([output_dir, "#{unquote(@tsdefs_prefix)}#{module_name}.d.ts"])
+              end
+
+          d_ts_filename =
+            get_d_ts_filename.(d_ts_output_dir, Enum.join(Module.split(__MODULE__), "."))
+
+          Helpers.output_ts_definitions(
+            __MODULE__,
+            @__live_server_actions,
+            unquote(bytecode),
+            d_ts_filename,
+            @__live_server_actions_typescript_fallback_type
+          )
+        end
       end
     end
   end

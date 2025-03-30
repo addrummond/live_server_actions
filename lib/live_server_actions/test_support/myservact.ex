@@ -1,7 +1,7 @@
 defmodule LiveServerActions.TestSupport.MyServact do
   @moduledoc false
 
-  use LiveServerActions
+  use LiveServerActions, d_ts_output_dir: fn root -> Path.join(root, "assets") end
 
   @server_action true
   def pub_no_typespec(_socket, _arg1, _arg2), do: "foo"
