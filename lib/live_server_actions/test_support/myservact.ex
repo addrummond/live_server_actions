@@ -1,4 +1,6 @@
 defmodule LiveServerActions.TestSupport.MyServact do
+  @moduledoc false
+
   use LiveServerActions
 
   @server_action true

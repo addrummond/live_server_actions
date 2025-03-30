@@ -1,6 +1,9 @@
 defmodule LiveServerActions do
   @moduledoc """
-  Documentation for `LiveServerActions`.
+  Add `use LiveServerActions` to your module to enable server actions.
+
+  Server actions may be public or private functions, and must have the attribute
+  `@server_action true`.
   """
 
   alias LiveServerActions.Helpers

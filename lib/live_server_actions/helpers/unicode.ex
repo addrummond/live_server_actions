@@ -1,4 +1,6 @@
 defmodule LiveServerActions.Helpers.Unicode do
+  @moduledoc false
+
   # Elixir has very bare-bones Unicode support, and I don't want to introduce
   # a comprehensive Unicode library as an external dependency just so we can
   # check that a given string is a valid JavaScript identifier.

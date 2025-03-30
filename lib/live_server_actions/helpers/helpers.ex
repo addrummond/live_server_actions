@@ -1,4 +1,6 @@
 defmodule LiveServerActions.Helpers do
+  @moduledoc false
+
   require Logger
   alias LiveServerActions.Helpers.Unicode
 
