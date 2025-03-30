@@ -49,8 +49,15 @@ export function addHooks(hooks) {
       if (this.el.dataset.reactComponentName && loaders[this.el.dataset.reactComponentName]) {
         window.removeEventListener("live-server-action", this.liveServerActionListener);
         window.addEventListener("phx:page-loading-stop", () =>
-          loaders[this.el.dataset.reactComponentName].unload(this.el.childNodes[1]), { once: true }
+          loaders[this.el.dataset.reactComponentName].unload(), { once: true }
         );
+      }
+    },
+    updated() {
+      if (this.el.dataset.reactComponentName) {
+        if (! loaders[this.el.dataset.reactComponentName])
+          throw new Error(`Component loader not found for '${this.el.dataset.reactComponentName}'`);
+        loaders[this.el.dataset.reactComponentName].update(JSON.parse(this.el.dataset.reactComponentProps));
       }
     }
   };

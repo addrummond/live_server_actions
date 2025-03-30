@@ -42,7 +42,11 @@ class ReactComponentLoader {
     );
   }
 
-  unload(_rootElem) {
+  update(props) {
+    this.root.render(React.createElement(this.component, props));
+  }
+
+  unload() {
     this.root.unmount();
   }
 }
