@@ -106,6 +106,8 @@ folder. This file specifies the methods available for
 `serverActions.MyApp.FooLive`, and the type of each method if the corresponding
 Elixir function has a type spec.
 
+Emission of `.d.ts` files only occurs when `Mix.env() == :dev`.
+
 In future the location of the emitted files may be configurable, but for now it
 is not.
 
