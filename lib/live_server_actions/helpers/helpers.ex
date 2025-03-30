@@ -80,7 +80,7 @@ defmodule LiveServerActions.Helpers do
               "Server action #{function} failed: #{Exception.format(:error, e, __STACKTRACE__)}"
             )
 
-            # Let the client know that the server action failed. Don't sent
+            # Let the client know that the server action failed. Don't send
             # error value or stacktrace to client in case they contain sensitive
             # information.
             {:reply,
