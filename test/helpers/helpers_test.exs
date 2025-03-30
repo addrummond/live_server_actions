@@ -25,7 +25,10 @@ defmodule LiveServerActions.HelpersTest do
     {:t_none2, 0, [], "undefined"},
     {:t_module, 0, [], "string"},
     {:t_node, 0, [], "string"},
-    {:t_complex_example1, 2, ["number", "({key1: object} | {key2: number})"], "(number | object)"}
+    {:t_complex_example1, 2, ["number", "({key1: object} | {key2: number})"],
+     "(number | object)"},
+    {:t_complex_example2, 2, ["number", "({key1: object} | {key2: number} | number)"],
+     "(number | object)"}
   ]
 
   describe "type_to_ts_type/2" do

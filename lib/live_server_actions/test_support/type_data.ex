@@ -56,4 +56,8 @@ defmodule LiveServerActions.TestSupport.TypeData do
   @spec t_complex_example1(integer(), %{key1: map()} | %{key2: integer()}) ::
           integer() | map()
   def t_complex_example1(_, _), do: nil
+
+  @spec t_complex_example2(integer(), %{key1: map()} | %{key2: integer()} | integer()) ::
+          integer() | map()
+  def t_complex_example2(_, _), do: nil
 end
