@@ -275,8 +275,8 @@ See `examples/quotes` in this repo and [this readme](examples/quotes/README.md).
 ### The Typescript fallback type
 
 If no Typescript equivalent is defined for an Elixir type, or if no `@spec` was
-defined for a server action, `any` is used by default as a fallback type. You
-can change this default to `unknown`:
+defined for a server action, then `any` is used by default as a fallback type
+for arguments and return values. You can change this default to `unknown`:
 
 ```elixir
 use LiveServerActions, typescript_fallback_type: :unknown
