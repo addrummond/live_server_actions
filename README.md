@@ -185,6 +185,8 @@ end
   bad arguments, but does not protect against an attacker sending mistyped data.
 * Calling a server action in a different LiveView module will give rise to a
   runtime error on the server.
+* A server action must have only one function clause. The library will raise an
+  error at compile time if this constraint is broken.
 
 ## Embedding a React component in your LiveView
 
