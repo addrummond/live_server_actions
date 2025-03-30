@@ -5,8 +5,6 @@ Call Elixir functions from React, with optional type safety.
 Inspired by Next.js
 [server actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
 
-⚠️⚠️⚠️ experimental code ⚠️⚠️⚠️
-
 ## Features
 
 * Built on LiveView events.
