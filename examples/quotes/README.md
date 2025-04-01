@@ -73,9 +73,10 @@ class ReactComponentLoader {
 
   load(rootElem, props) {
     this.root = createRoot(rootElem);
-    Promise.resolve(this.component).then(c =>
+    Promise.resolve(this.component).then(c => {
+      this.component = c;
       this.root.render(React.createElement(c, props))
-    );
+    });
   }
 
   update(props) {
