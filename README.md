@@ -25,7 +25,7 @@ LiveView project as follows:
 
 * Add the following dependency to `mix.exs`:
 ```elixir
-{:live_server_actions, git: "https://github.com/addrummond/live_server_actions.git", branch: "main"}
+{:live_server_actions, "~> 0.1.1"}
 ```
 * Add the following dependency to your `package.json`:
 ```json
