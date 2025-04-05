@@ -35,10 +35,9 @@ defmodule LiveServerActions.MixProject do
   defp package do
     [
       # These are the default files included in the package
-      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
-                license* CHANGELOG* changelog*),
+      files: ~w(lib assets .formatter.exs mix.exs README* LICENSE*),
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/addrummond/live_server_actions"},
+      links: %{"GitHub" => "https://github.com/addrummond/live_server_actions"}
     ]
   end
 end
