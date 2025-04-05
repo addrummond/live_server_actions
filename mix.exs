@@ -35,7 +35,12 @@ defmodule LiveServerActions.MixProject do
   defp package do
     [
       # These are the default files included in the package
-      files: ~w(lib assets .formatter.exs mix.exs README* LICENSE*),
+      files: ~w(
+        lib .formatter.exs mix.exs README* LICENSE*
+        assets/live_server_actions.d.ts
+        assets/serialize.js
+        assets/live_server_actions.js
+      ),
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/addrummond/live_server_actions"}
     ]
