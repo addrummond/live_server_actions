@@ -7,7 +7,11 @@ defmodule LiveServerActions.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: """
+      Call Elixir functions from React, with optional type safety.
+      """,
+      package: package()
     ]
   end
 
@@ -25,6 +29,16 @@ defmodule LiveServerActions.MixProject do
       # {:dep_from_hexpm, "~> 0.3.0"}
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:phoenix_live_view, "~> 1.0"}
+    ]
+  end
+
+  defp package do
+    [
+      # These are the default files included in the package
+      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
+                license* CHANGELOG* changelog*),
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/addrummond/live_server_actions"},
     ]
   end
 end
