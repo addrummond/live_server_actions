@@ -4,6 +4,9 @@ defmodule LiveServerActions do
 
   Server actions may be public or private functions, and must have the attribute
   `@server_action true`.
+
+  See readme at https://github.com/addrummond/live_server_actions/tree/main for
+  more information.
   """
 
   @tsdefs_prefix "LiveServerActions__"
