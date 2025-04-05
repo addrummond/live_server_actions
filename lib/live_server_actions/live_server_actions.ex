@@ -10,6 +10,7 @@ defmodule LiveServerActions do
 
   alias LiveServerActions.Helpers
 
+  @doc false
   defmacro __using__(args \\ []) do
     quote do
       if String.contains?("#{unquote(__MODULE__)}", "__") do
@@ -34,6 +35,7 @@ defmodule LiveServerActions do
     end
   end
 
+  @doc false
   def __on_definition__(%{module: module}, kind, name, args, _guards, _body)
       when kind in [:def, :defp] do
     sact_attr = Module.get_attribute(module, :server_action)
@@ -64,8 +66,10 @@ defmodule LiveServerActions do
     end
   end
 
+  @doc false
   def __on_definition__(_, _, _, _, _, _), do: nil
 
+  @doc false
   defmacro __after_compile__(_env, bytecode) do
     quote do
       if Mix.env() == :dev do
@@ -116,6 +120,7 @@ defmodule LiveServerActions do
     end
   end
 
+  @doc false
   defmacro __before_compile__(%{module: module}) do
     live_server_actions = Module.get_attribute(module, :__live_server_actions)
 
