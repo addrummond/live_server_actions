@@ -20,9 +20,6 @@ Inspired by Next.js
 
 ## Setup
 
-LiveServerActions isn't yet released on Hex. You can add it to your Phoenix
-LiveView project as follows:
-
 * Add the following dependency to `mix.exs`:
 ```elixir
 {:live_server_actions, "~> 0.1.1"}
