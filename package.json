@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "assets/live_server_actions.js",
   "private": true,
+  "type": "module",
   "types": "./assets/live_server_actions.d.ts",
   "devDependencies": {
     "vitest": "^3.0.9"

@@ -54,42 +54,61 @@ defmodule LiveServerActions.HelpersTest do
       args = [
         "2025-03-18T19:13:34.026831Z",
         ["bar", "2027-03-18T19:13:34.026831Z"],
-        %{"foo" => ["bar", %{"amp" => "2026-03-18T19:13:34.026831Z"}]}
+        %{"foo" => ["bar", %{"amp" => "2026-03-18T19:13:34.026831Z"}]},
+        %{},
+        %{},
+        [%{}, %{}]
       ]
 
       specials = [
         [%{"type" => "Date", "path" => []}],
         [%{"type" => "Date", "path" => [1]}],
-        [%{"type" => "Date", "path" => ["foo", 1, "amp"]}]
+        [%{"type" => "Date", "path" => ["foo", 1, "amp"]}],
+        [%{"type" => "Set", "path" => [], "shadow" => [1, 2, 3]}],
+        [%{"type" => "shadow_id", "path" => [], "shadow" => %{"foo" => "bar"}}],
+        [
+          %{"type" => "Set", "path" => [0], "shadow" => [1, 2, 3]},
+          %{"type" => "shadow_id", "path" => [1], "shadow" => %{"foo" => "bar"}}
+        ]
       ]
 
       assert Helpers.deserialize_specials(args, specials) == [
                ~U[2025-03-18 19:13:34.026831Z],
                ["bar", ~U[2027-03-18 19:13:34.026831Z]],
-               %{"foo" => ["bar", %{"amp" => ~U[2026-03-18 19:13:34.026831Z]}]}
+               %{"foo" => ["bar", %{"amp" => ~U[2026-03-18 19:13:34.026831Z]}]},
+               MapSet.new([1, 2, 3]),
+               %{"foo" => "bar"},
+               [MapSet.new([1, 2, 3]), %{"foo" => "bar"}]
              ]
     end
   end
 
   describe "get_serialization_specials/3" do
     test "no args, no specials" do
-      assert Helpers.get_serialization_specials([], [], []) == []
+      assert Helpers.get_serialization_specials([], []) == {[], []}
     end
 
     test "a complicated case" do
       val = [
         ~U[2025-03-18 19:13:34.026831Z],
-        ["bar", ~U[2027-03-18 19:13:34.026831Z]],
+        ["bar", ~U[2027-03-18 19:13:34.026831Z], MapSet.new(["foo", "bar"])],
+        %{"foo" => ["bar", %{"amp" => ~U[2026-03-18 19:13:34.026831Z]}]}
+      ]
+
+      expected_val = [
+        ~U[2025-03-18 19:13:34.026831Z],
+        ["bar", ~U[2027-03-18 19:13:34.026831Z], ["bar", "foo"]],
         %{"foo" => ["bar", %{"amp" => ~U[2026-03-18 19:13:34.026831Z]}]}
       ]
 
       expected_specials = [
         %{type: "Date", path: [0]},
         %{type: "Date", path: [1, 1]},
+        %{type: "Set", path: [1, 2]},
         %{type: "Date", path: [2, "foo", 1, "amp"]}
       ]
 
-      assert Helpers.get_serialization_specials(val) == expected_specials
+      assert Helpers.get_serialization_specials(val) == {expected_val, expected_specials}
     end
   end
 

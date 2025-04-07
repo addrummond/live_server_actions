@@ -78,7 +78,13 @@ defmodule LiveServerActions.Helpers do
                 {socket, result}
             end
 
-          {:reply, add_retval_specials(%{result: result}, result), socket}
+          {result, specials} = get_serialization_specials(result)
+
+          if specials != [] do
+            {:reply, %{result: result, specials: specials}, socket}
+          else
+            {:reply, %{result: result}, socket}
+          end
         rescue
           e ->
             Logger.error(
@@ -323,59 +329,76 @@ defmodule LiveServerActions.Helpers do
 
   def deserialize_specials(args, specials) do
     Enum.map(Enum.zip(args, specials), fn {arg, specials} ->
-      Enum.reduce(specials, arg, fn %{"type" => type, "path" => path}, arg ->
+      Enum.reduce(specials, arg, fn special = %{"type" => type, "path" => path}, arg ->
+        shadow = special["shadow"]
+
+        arg =
+          if shadow do
+            upd_at(arg, path, fn _ -> shadow end)
+          else
+            arg
+          end
+
         upd_at(arg, path, fn a ->
           case {a, type} do
             {"" <> _, "Date"} ->
               {:ok, d, _} = DateTime.from_iso8601(a)
               d
 
+            {elems, "Set"} ->
+              MapSet.new(elems)
+
+            {_, "shadow_id"} ->
+              shadow
+
             _ ->
-              raise "Unknown special type #{inspect(type)}"
+              Logger.warning(
+                "#{__MODULE__}.deserialize_specials/2: Unknown special type #{inspect(type)}"
+              )
+
+              a
           end
         end)
       end)
     end)
   end
 
-  def get_serialization_specials(val, path \\ [], specials \\ []) do
+  def get_serialization_specials(val, path \\ []) do
     case val do
       %DateTime{} ->
-        specials ++ [%{type: "Date", path: Enum.reverse(path)}]
+        {val, [%{type: "Date", path: Enum.reverse(path)}]}
 
       %Date{} ->
-        specials ++ [%{type: "Date", path: Enum.reverse(path)}]
+        {val, [%{type: "Date", path: Enum.reverse(path)}]}
 
       [] ->
-        specials
+        {val, []}
 
       [_ | _] ->
         val
         |> Enum.with_index()
-        |> Enum.map(fn {v, i} ->
-          get_serialization_specials(v, [i | path], specials)
+        |> Enum.reduce({[], []}, fn {v, i}, {new_vals, s} ->
+          {vv, ss} = get_serialization_specials(v, [i | path])
+          {[vv | new_vals], s ++ ss}
         end)
-        |> Enum.concat()
+        |> case do
+          {new_vals, specials} ->
+            {Enum.reverse(new_vals), specials}
+        end
+
+      %MapSet{} ->
+        # We don't look inside sets for the reasons explained in the Readme.
+        {MapSet.to_list(val), [%{type: "Set", path: Enum.reverse(path)}]}
 
       %{} ->
         val
-        |> Enum.map(fn {k, v} ->
-          get_serialization_specials(v, [k | path], specials)
+        |> Enum.reduce({val, []}, fn {k, v}, {new_map, s} ->
+          {vv, ss} = get_serialization_specials(v, [k | path])
+          {Map.put(new_map, k, vv), s ++ ss}
         end)
-        |> Enum.concat()
 
       _ ->
-        specials
-    end
-  end
-
-  defp add_retval_specials(map, result) do
-    specials = get_serialization_specials(result)
-
-    if specials != [] do
-      Map.put(map, :specials, specials)
-    else
-      map
+        {val, []}
     end
   end
 
@@ -469,6 +492,7 @@ defmodule LiveServerActions.Helpers do
   defp upd_at(value, [], f), do: f.(value)
 
   defp upd_at(value = [_ | _], [idx], f) do
+    # Note: List.update_at does nothing if the index is out of range.
     List.update_at(value, idx, f)
   end
 
@@ -477,14 +501,22 @@ defmodule LiveServerActions.Helpers do
   end
 
   defp upd_at(value = %{}, [key], f) do
-    Map.update!(value, key, f)
+    map_upd_if_exists(value, key, f)
   end
 
   defp upd_at(value = %{}, [key | rest], f) do
-    Map.update!(value, key, fn elem -> upd_at(elem, rest, f) end)
+    map_upd_if_exists(value, key, fn elem -> upd_at(elem, rest, f) end)
   end
 
   defp upd_at(value, _path, _f), do: value
+
+  defp map_upd_if_exists(map, key, f) do
+    if Map.has_key?(map, key) do
+      Map.update!(map, key, f)
+    else
+      map
+    end
+  end
 
   defp mung(arg = %{}, {:type, _, :map, field_types}) do
     Enum.reduce(field_types, arg, fn t, acc ->

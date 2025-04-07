@@ -5,7 +5,12 @@ import { useState, useActionState, startTransition } from 'react';
 export const RandomQuoteChooser = () => {
   const [fruit, setFruit] = useState("Apple");
   const [quote, getQuoteAction, quoteIsLoading] = useActionState(
-    () => serverActions.QuotesWeb.QuotesLive.get_quote({ fruit }),
+    () => serverActions.QuotesWeb.QuotesLive.get_quote({ fruit, extra:
+      new Map([
+        ["mykey1", [1, new Set([4, 5, 6])]],
+        [999, new Map([[1,2], [3,4]])]
+      ])
+    }),
     null
   );
   

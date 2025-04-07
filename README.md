@@ -143,6 +143,11 @@ client. At present, the following values are serializable:
   * Objects with the keys/values given by `Object.entries()`, where all values
     are serializable
   * Arrays of serializable values
+  * `Set` objects with serializable non-object members (converted to Elixir
+    `MapSet` values).
+  * `Map` objects where keys are strings or numbers and values are serializable
+    (converted to Elixir maps)
+  * `FormData` objects where values are strings.
   * `Date` objects (converted to Elixir `DateTime` structs)
 * **Elixir**
   * Integers
@@ -151,10 +156,17 @@ client. At present, the following values are serializable:
   * Booleans
   * `nil`
   * Maps with string or atom keys and serializable values
+  * `MapSet`s containing integers, floats, strings, booleans or `nil` (converted
+    to JavaScript `Set` objects).
   * Lists of serializable values
   * `DateTime` or `Date` structs (converted to JavaScript `Date` objects)
 
-In future, support may be added for customizing encoding/decoding of values.
+In future, support may be added for customizing encoding/decoding of values. The
+restrictions on serialization of sets are imposed because JavaScript `Set` and
+Elixir `MapSet` have quite different identity semantics. For example, in
+JavaScript, `new Set([new Set([1]), new Set([1])])` is a set with two members,
+whereas in Elixir, `MapSet.new([MapSet.new([1]), MapSet.new([1])])` is a set
+with one member.
 
 ### Updating the live socket
 
@@ -172,7 +184,7 @@ property of a `<form>`:
 ```tsx
 const [formState, formAction] = useActionState(
   (_currentState, formData) =>
-    serverActions.MyAppWeb.FooLive.submit_form(Object.fromEntries([...formData])),
+    serverActions.MyAppWeb.FooLive.submit_form(formData)),
   {}
 );
 

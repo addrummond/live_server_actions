@@ -26,8 +26,8 @@ describe("getSerializationSpecials", () => {
       ]
     );
     expect(specials).toEqual([
-      { path: [0, "bar", 1], type: 'Date' },
-      { path: [1, "baz", 1, "qux"], type: 'Date' }
+      { path: [1, "baz", 1, "qux"], type: 'Date' },
+      { path: [0, "bar", 1], type: 'Date' }
     ]);
   });
 
@@ -39,6 +39,33 @@ describe("getSerializationSpecials", () => {
       ]
     );
     expect(specials).toEqual([]);
+  });
+
+  test("should serialize elements of sets and maps in the correct order", () => {
+    const data = {
+      foo: new Map([
+        ["mykey1", [1, new Set([4, 5, 6])]],
+        [999, new Map([[1,2], [3,4]])]
+      ])
+    }
+
+    const specials = getSerializationSpecials(data);
+    console.log(specials);
+    expect(specials).toEqual(
+      [
+        {
+          path: [ 'foo' ],
+          type: 'shadow_id',
+          shadow: { '999': new Map([[1,2], [3,4]]), mykey1: [1, new Set([4, 5, 6])] }
+        },
+        {
+          path: [ 'foo', 999 ],
+          type: 'shadow_id',
+          shadow: { '1': 2, '3': 4 }
+        },
+        { path: [ 'foo', 'mykey1', 1 ], type: 'Set', shadow: [ 4, 5, 6 ] }
+      ]
+    );
   });
 });
 
