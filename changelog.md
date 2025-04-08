@@ -2,7 +2,7 @@
 
 ## 0.2.0
 
-* Expand range of serializable values to include JavaScript `Set`, `Map` and
+* Expands range of serializable values to include JavaScript `Set`, `Map` and
 `FormData` objects and Elixir `MapSet` objects.
 
 ## 0.1.1
