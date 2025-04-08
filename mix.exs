@@ -37,7 +37,7 @@ defmodule LiveServerActions.MixProject do
     [
       # These are the default files included in the package
       files: ~w(
-        lib .formatter.exs mix.exs README* LICENSE*
+        lib .formatter.exs mix.exs README* LICENSE* changelog.md
         assets/live_server_actions.d.ts
         assets/serialize.js
         assets/live_server_actions.js
