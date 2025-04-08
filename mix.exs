@@ -43,7 +43,10 @@ defmodule LiveServerActions.MixProject do
         assets/live_server_actions.js
       ),
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/addrummond/live_server_actions"}
+      links: %{
+        "GitHub" => "https://github.com/addrummond/live_server_actions",
+        "Changelog" => "https://github.com/addrummond/live_server_actions/blob/main/changelog.md"
+      }
     ]
   end
 end
