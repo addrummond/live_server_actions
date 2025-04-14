@@ -2,7 +2,6 @@ export function getSerializationSpecials(val) {
   return getSerializationSpecialsHelper(val, [], []).reverse();
 }
 
-
 function getSerializationSpecialsHelper(val, path, specials) {
   if (val instanceof Date) {
     specials.push({path, type: 'Date'});
