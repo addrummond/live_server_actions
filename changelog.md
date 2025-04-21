@@ -1,5 +1,10 @@
 # LiveServerActions changelog
 
+## 0.3.0
+
+* Fix bug with `null` arguments to server actions.
+* Better serialization/deserialization algorithm.
+
 ## 0.2.0
 
 * Expands range of serializable values to include JavaScript `Set`, `Map` and
