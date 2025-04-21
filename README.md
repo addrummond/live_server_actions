@@ -91,8 +91,8 @@ Notice that the typed version of the function receives a map with the atom key
 LiveServerActions doesn't care about the type of the `socket` argument, so if you want
 to save some typing, you can replace `Phoenix.LiveView.Socket.t()` with `any()`.
 
-Whether to define a server action as a public or private function is a question
-of style left to the user. It has no effect on the server action's
+Server actions may be defined as either public or private functions. The choice
+is a question of style left to the user. It has no effect on the server action's
 functionality.
 
 ### Generated TypeScript .d.ts files
