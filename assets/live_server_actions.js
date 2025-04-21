@@ -69,7 +69,7 @@ const liveServerActionListener = h => e => {
     args: e.detail.args,
   };
   const specials = e.detail.args.map(a => getSerializationSpecials(a));
-  if (specials.some(s => s.length > 0))
+  if (specials.some(s => s !== null))
     event.specials = specials;
   const eventId = h.pushEvent(`live-server-action`, event, e.detail.replyHandler);
   e.detail.withEventId(eventId);
@@ -89,6 +89,6 @@ function replyHandler(reply, ref) {
 
     if (reply.error)
       return reject(new Error(`Server action ${name} failed`));
-    resolve(deserializeSpecials(reply.result, reply.specials ?? []));
+    resolve(deserializeSpecials(reply.result, reply.specials));
   }
 }

@@ -329,76 +329,122 @@ defmodule LiveServerActions.Helpers do
 
   def deserialize_specials(args, specials) do
     Enum.map(Enum.zip(args, specials), fn {arg, specials} ->
-      Enum.reduce(specials, arg, fn special = %{"type" => type, "path" => path}, arg ->
-        shadow = special["shadow"]
-
-        arg =
-          if shadow do
-            upd_at(arg, path, fn _ -> shadow end)
-          else
-            arg
-          end
-
-        upd_at(arg, path, fn a ->
-          case {a, type} do
-            {"" <> _, "Date"} ->
-              {:ok, d, _} = DateTime.from_iso8601(a)
-              d
-
-            {elems, "Set"} ->
-              MapSet.new(elems)
-
-            {_, "shadow_id"} ->
-              shadow
-
-            _ ->
-              Logger.warning(
-                "#{__MODULE__}.deserialize_specials/2: Unknown special type #{inspect(type)}"
-              )
-
-              a
-          end
-        end)
-      end)
+      deserialize_special(arg, specials)
     end)
   end
 
-  def get_serialization_specials(val, path \\ []) do
+  defp deserialize_special(val, nil), do: val
+
+  defp deserialize_special(val, specials = %{"type" => type}) do
+    path = specials["path"]
+
+    {list?, val} =
+      case type do
+        "id" ->
+          # If we have a list, convert it to a map with integer keys. This makes
+          # lists of specials (e.g. dates) deserialize in O(log(n)) time rather
+          # than O(n^2) time.
+          list_to_map(val)
+
+        "shadow_id" ->
+          # A shadow is never a list, so no need to call list_to_map.
+          {false, upd_at(val, path, fn _ -> specials["shadow"] end)}
+
+        "Date" ->
+          {false,
+           upd_at(val, path, fn val ->
+             {:ok, d, _} = DateTime.from_iso8601(val)
+             d
+           end)}
+
+        "Set" ->
+          {false, upd_at(val, path, fn _ -> MapSet.new(specials["shadow"]) end)}
+      end
+
+    val =
+      Enum.reduce(specials["subs"] || [], val, fn sub, val ->
+        upd_at(val, path, fn val -> deserialize_special(val, sub) end)
+      end)
+
+    if list? do
+      Enum.map(val, fn {_, v} -> v end)
+    else
+      val
+    end
+  end
+
+  def get_serialization_specials(val) do
+    val
+    |> get_serialization_specials_helper(nil)
+    |> case do
+      {val, specials} ->
+        {val, List.first(specials)}
+    end
+  end
+
+  defp get_serialization_specials_helper(val, path) do
     case val do
       %DateTime{} ->
-        {val, [%{type: "Date", path: Enum.reverse(path)}]}
+        {val, mk_specials("Date", path, [])}
 
       %Date{} ->
-        {val, [%{type: "Date", path: Enum.reverse(path)}]}
+        {val, mk_specials("Date", path, [])}
 
       [] ->
         {val, []}
 
       [_ | _] ->
-        val
-        |> Enum.with_index()
-        |> Enum.reduce({[], []}, fn {v, i}, {new_vals, s} ->
-          {vv, ss} = get_serialization_specials(v, [i | path])
-          {[vv | new_vals], s ++ ss}
-        end)
-        |> case do
-          {new_vals, specials} ->
-            {Enum.reverse(new_vals), specials}
-        end
+        {new_vals, subs} =
+          val
+          |> Enum.with_index()
+          |> Enum.reduce({[], []}, fn {v, i}, {new_vals, s} ->
+            {vv, ss} = get_serialization_specials_helper(v, i)
+            {[vv | new_vals], s ++ ss}
+          end)
+
+        {Enum.reverse(new_vals), mk_specials("id", path, subs)}
 
       %MapSet{} ->
         # We don't look inside sets for the reasons explained in the Readme.
-        {MapSet.to_list(val), [%{type: "Set", path: Enum.reverse(path)}]}
+        {MapSet.to_list(val), mk_specials("Set", path, [])}
 
       %{} ->
-        val
-        |> Enum.reduce({val, []}, fn {k, v}, {new_map, s} ->
-          {vv, ss} = get_serialization_specials(v, [k | path])
-          {Map.put(new_map, k, vv), s ++ ss}
-        end)
+        {new_map, subs} =
+          val
+          |> Enum.reduce({val, []}, fn {k, v}, {new_map, s} ->
+            {vv, ss} = get_serialization_specials_helper(v, k)
+            {Map.put(new_map, k, vv), s ++ ss}
+          end)
+
+        {new_map, mk_specials("id", path, subs)}
 
       _ ->
         {val, []}
+    end
+  end
+
+  defp list_to_map(val) when is_list(val) do
+    {true,
+     val
+     |> Enum.reduce({0, %{}}, fn v, {i, m} ->
+       {i + 1, Map.put(m, i, v)}
+     end)
+     |> elem(1)}
+  end
+
+  defp list_to_map(val) do
+    {false, val}
+  end
+
+  defp mk_specials(type, path, subs) do
+    if type == "id" and subs == [] do
+      []
+    else
+      [type: type]
+      |> Enum.concat(if path != nil, do: [path: path], else: [])
+      |> Enum.concat(if subs != [], do: [subs: subs], else: [])
+      |> Map.new()
+      |> List.wrap()
     end
   end
 
@@ -489,23 +535,15 @@ defmodule LiveServerActions.Helpers do
     end
   end
 
-  defp upd_at(value, [], f), do: f.(value)
+  defp upd_at(value, nil, f), do: f.(value)
 
-  defp upd_at(value = [_ | _], [idx], f) do
+  defp upd_at(value = [_ | _], idx, f) do
     # Note: List.update_at does nothing if the index is out of range.
     List.update_at(value, idx, f)
   end
 
-  defp upd_at(value = [_ | _], [idx | rest], f) do
-    List.update_at(value, idx, fn elem -> upd_at(elem, rest, f) end)
-  end
-
-  defp upd_at(value = %{}, [key], f) do
+  defp upd_at(value = %{}, key, f) do
     map_upd_if_exists(value, key, f)
-  end
-
-  defp upd_at(value = %{}, [key | rest], f) do
-    map_upd_if_exists(value, key, fn elem -> upd_at(elem, rest, f) end)
   end
 
   defp upd_at(value, _path, _f), do: value

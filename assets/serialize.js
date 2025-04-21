@@ -1,64 +1,73 @@
-export function getSerializationSpecials(val) {
-  return getSerializationSpecialsHelper(val, [], []).reverse();
+
+export function getSerializationSpecials(val, path) {
+  if (val instanceof Date) {
+    return mkSpecials('Date', path)
+  } else if (Array.isArray(val)) {
+    let subs = [];
+    for (let i = 0; i < val.length; ++i)
+      pushIfNotNull(subs, getSerializationSpecials(val[i], i));
+    return mkSpecials('id', path, subs);
+  } else if (val instanceof Set) {
+    let subs = [];
+    for (const elem of val) {
+      if (typeof elem !== 'object')
+        pushIfNotNull(subs, getSerializationSpecials(elem, elem));
+    }
+    return mkSpecials('Set', path, subs, [...val]);
+  } else if (val instanceof Map || val instanceof FormData) {
+    let subs = [];
+    for (const [k, v] of val.entries()) {
+      if ((typeof k === 'string' || typeof k === 'number') && !(v instanceof Blob))
+        pushIfNotNull(subs, getSerializationSpecials(v, k));
+    }
+    return mkSpecials('shadow_id', path, subs, Object.fromEntries([...val.entries()]));
+  } else if (val !== null && typeof val === 'object') {
+    let subs = [];
+    for (const [key, value] of Object.entries(val))
+      pushIfNotNull(subs, getSerializationSpecials(value, key));
+    return mkSpecials('id', path, subs);
+  }
+  return null;
 }
 
-function getSerializationSpecialsHelper(val, path, specials) {
-  if (val instanceof Date) {
-    specials.push({path, type: 'Date'});
-  } else if (Array.isArray(val)) {
-    for (let i = 0; i < val.length; i++)
-      getSerializationSpecialsHelper(val[i], [...path, i], specials);
-  } else if (val instanceof Set) {
-    let foundOne = false;
-    for (const elem of val) {
-      if (typeof elem !== 'object') {
-        foundOne = true;
-        getSerializationSpecialsHelper(elem, [...path, elem], specials);
-      }
-    }
-    if (foundOne)
-      specials.push({path, type: 'Set', shadow: [...val]});
-  } else if (val instanceof Map || val instanceof FormData) {
-    let foundOne = false;
-    for (const [k, v] of val.entries()) {
-      if ((typeof k === 'string' || typeof k === 'number') && !(v instanceof Blob)) {
-        foundOne = true;
-        getSerializationSpecialsHelper(v, [...path, k], specials);
-      }
-    }
-    if (foundOne)
-      specials.push({path, type: 'shadow_id', shadow: Object.fromEntries([...val.entries()])});
-  } else if (typeof val === 'object') {
-    for (const [key, value] of Object.entries(val))
-      getSerializationSpecialsHelper(value, [...path, key], specials);
-  }
+function pushIfNotNull(arr, val) {
+  if (val !== null)
+    arr.push(val);
+}
 
-  return specials;
+function mkSpecials(type, path, subs, shadow) {
+  if (type === 'id' && subs.length === 0)
+    return null;
+  return { type, ...(path === null ? {} : {path}), ...(subs && subs.length > 0 ? {subs} : {}), ...(shadow && {shadow}) };
 }
 
 export function deserializeSpecials(val, specials) {
-  outer: for (const {path, type} of specials) {
-    let v = val;
-    let upd = f => val = f(val);
-    for (const p of path) {
-      let vv = v; // rebind v so that we hang on to the value before mutation
-      upd = f => vv[p] = f(vv[p]);
-      if (! {}.hasOwnProperty.call(v, p)) { // hasOwnProperty works for array indices too
-        console.warn(`Path ${JSON.stringify(path)} not found in value when deserializing specials`);
-        continue outer;
-      }
-      v = v[p];
-    }
-    switch (type) {
-      case 'Date':
-        upd(d => new Date(d));
-        break;
-      case 'Set':
-        upd(s => new Set(s));
-        break;
-      default:
-        console.warn(`Unknown special type ${type}`);
-    }
+  if (specials == null)
+    return val;
+
+  switch (specials.type) {
+    case 'Date':
+      val = new Date(val);
+      break;
+    case 'Set':
+      val = new Set(val);
+      break;
+    case 'id':
+      break;
+    default:
+      console.warn(`Unknown special type ${specials.type}`);
   }
+
+  for (const subSpecials of specials.subs ?? []) {
+    const nullProto = Object.getPrototypeOf(val) === null;
+    // hasOwnProperty works for array indices too
+    if ((! nullProto && ! {}.hasOwnProperty.call(val, subSpecials.path)) || (nullProto && ! (subSpecials.path in val))) {
+      console.warn(`Path ${JSON.stringify(subSpecials.path)} not found in value when deserializing specials`);
+      continue;
+    }
+
+    val[subSpecials.path] = deserializeSpecials(val[subSpecials.path], subSpecials);
+  }
+
   return val;
 }

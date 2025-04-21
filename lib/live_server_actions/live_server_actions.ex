@@ -159,7 +159,7 @@ defmodule LiveServerActions do
           @__live_server_actions,
           module_and_func,
           args,
-          params["specials"] || Enum.map(args, fn _ -> [] end),
+          params["specials"] || Enum.map(args, fn _ -> nil end),
           socket,
           &__live_server_actions_call_private_server_action/2
         )
