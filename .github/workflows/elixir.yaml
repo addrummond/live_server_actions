@@ -77,6 +77,8 @@ jobs:
       run: |
         mix deps.clean --all
         mix clean
+        rm -rf node_modules
+        npm cache clean --force
       shell: sh
 
     # Step: Download project dependencies. If unchanged, uses
