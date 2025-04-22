@@ -96,5 +96,8 @@ jobs:
       run: mix format --check-formatted
 
     # Step: Execute the tests.
-    - name: Run tests
+    - name: Run JavaScript tests
+      run: npm test
+
+    - name: Run Elixir tests
       run: mix test
