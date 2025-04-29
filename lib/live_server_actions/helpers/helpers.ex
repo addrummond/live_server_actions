@@ -342,7 +342,7 @@ defmodule LiveServerActions.Helpers do
       case type do
         "id" ->
           # If we have a list, convert it to a map with integer keys. This makes
-          # lists of specials (e.g. dates) deserialize in O(log(n)) time rather
+          # lists of specials (e.g. dates) deserialize in O(n log(n)) time rather
           # than O(n^2) time.
           list_to_map(val)
 
