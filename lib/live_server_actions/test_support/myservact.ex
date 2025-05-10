@@ -7,7 +7,7 @@ defmodule LiveServerActions.TestSupport.MyServact do
   def pub_no_typespec(_socket, _arg1, _arg2), do: "foo"
 
   @server_action true
-  defp priv_no_typespec(_socket, _arg1, _arg2), do: "foo"
+  defp priv_no_typespec(_socket, _arg1, _arg2, _arg3), do: "foo"
 
   @server_action true
   @spec pub_with_typespec(Phoenix.LiveView.Socket.t(), %{

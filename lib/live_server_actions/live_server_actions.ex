@@ -55,13 +55,17 @@ defmodule LiveServerActions do
         raise Helpers.make_duplicate_live_action_definition_error(module, name)
       end
 
+      if args == [] do
+        raise Helpers.make_empty_args_error(module, name)
+      end
+
       Module.put_attribute(
         module,
         :__live_server_actions,
         Map.put(
           Module.get_attribute(module, :__live_server_actions, %{}),
           name,
-          {length(args), typescript_fallback_type, kind}
+          {args, typescript_fallback_type, kind}
         )
       )
 
@@ -135,7 +139,9 @@ defmodule LiveServerActions do
       unquote(
         live_server_actions
         |> Enum.filter(fn {_, {_, _, kind}} -> kind == :defp end)
-        |> Enum.map(fn {name, {arity, _, _}} ->
+        |> Enum.map(fn {name, {server_action_arguments, _, _}} ->
+          arity = length(server_action_arguments)
+
           quote do
             defp __live_server_actions_call_private_server_action(unquote(name), args) do
               apply(

@@ -88,12 +88,34 @@ Notice that the typed version of the function receives a map with the atom key
 `:user_uuid` rather than the string key `"user_uuid"`. This is because of
 [automatic string to atom munging](#automatic-string-to-atom-munging).
 
-LiveServerActions doesn't care about the type of the `socket` argument, so if you want
-to save some typing, you can replace `Phoenix.LiveView.Socket.t()` with `any()`.
+LiveServerActions doesn't care about the type of the `socket` argument, so if
+you want to save some typing, you can replace `Phoenix.LiveView.Socket.t()`
+with `any()`.
 
 Server actions may be defined as either public or private functions. The choice
 is a question of style left to the user. It has no effect on the server action's
 functionality.
+
+If you name function arguments then these names are exported to the
+corresponding Typescript type definition. For example, the following server
+actions all have a second argument named `options`:
+
+```elixir
+@server_action true
+defp my_server_action1(_socket, _options=%{protocol: protocol}) do
+  ...
+end
+
+@server_action true
+defp my_server_action2(_socket, %{protocol: protocol}=options) do
+  ...
+end
+
+@server_action true
+defp my_server_action2(_socket, options) do
+  ...
+end
+```
 
 ### Generated TypeScript .d.ts files
 

@@ -1,5 +1,10 @@
 # LiveServerActions changelog
 
+## 0.3.2
+
+* Argument names of server actions are now exported to the corresponding
+  Typescript type definitions.
+
 ## 0.3.1
 
 * Fix bug with syntax of function argument types in emission of `.d.ts` files

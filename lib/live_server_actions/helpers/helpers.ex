@@ -38,7 +38,9 @@ defmodule LiveServerActions.Helpers do
       nil ->
         raise "No server action #{fname} defined in #{current_module}"
 
-      {arity, _typescript_fallback_type, kind} ->
+      {server_action_arguments, _typescript_fallback_type, kind} ->
+        arity = length(server_action_arguments)
+
         # + 1 to allow for socket arg
         if length(args) + 1 != arity do
           raise "Wrong number of arguments for server action #{function}"
@@ -243,6 +245,14 @@ defmodule LiveServerActions.Helpers do
     """
   end
 
+  # Ditto
+  def make_empty_args_error(module_name, function_name) do
+    """
+    A server action must have at least one argument (the socket). The server
+    action '#{function_name}' in the module '#{module_name}' has no arguments.
+    """
+  end
+
   def get_typescript_fallback_type(:any), do: "any"
   def get_typescript_fallback_type(:unknown), do: "unknown"
 
@@ -263,7 +273,11 @@ defmodule LiveServerActions.Helpers do
 
     ts =
       server_actions
-      |> Enum.map(fn {name, {arity, typescript_fallback_type, _kind}} ->
+      |> Enum.map(fn {name, {arguments, typescript_fallback_type, _kind}} ->
+        arity = length(arguments)
+
+        [_ | argument_names] = get_argument_names(arguments)
+
         typescript_fallback_type =
           typescript_fallback_type ||
             get_typescript_fallback_type(typescript_global_fallback_type)
@@ -276,10 +290,10 @@ defmodule LiveServerActions.Helpers do
 
         case spec do
           nil ->
-            "#{name}: (#{1..(arity - 1) |> Enum.map(fn i -> "_#{i}: #{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
+            "#{name}: (#{argument_names |> Enum.with_index() |> Enum.map(fn {name, i} -> "#{valid_js_identifier_or_nil(name) || "_#{i + 1}"}: #{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
 
           _ ->
-            "#{name}: #{function_type_spec_to_ts_type(spec, typescript_fallback_type)}"
+            "#{name}: #{function_type_spec_to_ts_type(spec, argument_names, typescript_fallback_type)}"
         end
       end)
       |> Enum.join("\n")
@@ -507,7 +521,7 @@ defmodule LiveServerActions.Helpers do
     |> String.trim_trailing("\n")
   end
 
-  defp function_type_spec_to_ts_type(spec, typescript_fallback_type) do
+  defp function_type_spec_to_ts_type(spec, argument_names, typescript_fallback_type) do
     case spec do
       {:type, _, :fun, [{:type, _, :product, [_socket_type | arg_types]}, return_type]} ->
         # We don't check that socket_type is Phoenix.LiveView.Socket because
@@ -522,8 +536,10 @@ defmodule LiveServerActions.Helpers do
         args =
           arg_types
           |> Enum.with_index()
-          |> Enum.map(fn {arg_type, i} ->
-            "_#{i + 1}: " <> type_to_ts_type(arg_type, typescript_fallback_type)
+          |> Enum.zip(argument_names)
+          |> Enum.map(fn {{arg_type, i}, name} ->
+            "#{valid_js_identifier_or_nil(name) || "_#{i + 1}"}: " <>
+              type_to_ts_type(arg_type, typescript_fallback_type)
           end)
 
         "(#{Enum.join(args, ", ")}) => Promise<#{ret}>"
@@ -653,6 +669,14 @@ defmodule LiveServerActions.Helpers do
     end
   end
 
+  defp valid_js_identifier_or_nil(identifier) do
+    if valid_js_identifier?(identifier) do
+      identifier
+    else
+      nil
+    end
+  end
+
   defp strip_socket_tuple_from_return_type(
          {:type, _, :tuple,
           [
@@ -663,4 +687,40 @@ defmodule LiveServerActions.Helpers do
        do: t
 
   defp strip_socket_tuple_from_return_type(t), do: t
+
+  defp get_argument_names(arguments) do
+    Enum.map(arguments, fn arg ->
+      arg
+      |> case do
+        {name, _linecol, nil} when is_atom(name) ->
+          name
+
+        {:=, _linecol1,
+         [
+           {name, _linecol2, nil},
+           _
+         ]}
+        when is_atom(name) ->
+          name
+
+        {:=, _linecol1,
+         [
+           _,
+           {name, _linecol2, nil}
+         ]}
+        when is_atom(name) ->
+          name
+
+        _ ->
+          nil
+      end
+      |> case do
+        nil ->
+          nil
+
+        name ->
+          String.replace_prefix("#{name}", "_", "")
+      end
+    end)
+  end
 end

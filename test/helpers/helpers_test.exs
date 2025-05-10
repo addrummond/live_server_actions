@@ -172,7 +172,7 @@ defmodule LiveServerActions.HelpersTest do
     namespace ServerActions.LiveServerActions.TestSupport {
       interface MyServact {
         pub_no_typespec: (_1: any, _2: any) => Promise<any>
-        priv_no_typespec: (_1: any, _2: any) => Promise<any>
+        priv_no_typespec: (foo: any, bar: any, amp: any) => Promise<any>
         pub_with_typespec: (_1: {fruit: string, another_key: {foo: number, bar: string}}) => Promise<({error: string} | {quote: string, author: string, year: number})>
         priv_with_typespec: (_1: {fruit: string}) => Promise<({error: string} | {quote: string, author: string, year: number})>
         _日本語識別子: (_1: any) => Promise<any>
@@ -198,11 +198,11 @@ defmodule LiveServerActions.HelpersTest do
         Helpers.output_ts_definitions(
           MyServact,
           [
-            {:pub_no_typespec, {3, :any, :def}},
-            {:priv_no_typespec, {3, :any, :defp}},
-            {:pub_with_typespec, {2, :any, :def}},
-            {:priv_with_typespec, {2, :any, :defp}},
-            {:_日本語識別子, {2, :any, :def}}
+            {:pub_no_typespec, {make_n_anon_args(3), :any, :def}},
+            {:priv_no_typespec, {make_named_args(["socket", "foo", "bar", "amp"]), :any, :defp}},
+            {:pub_with_typespec, {make_n_anon_args(2), :any, :def}},
+            {:priv_with_typespec, {make_n_anon_args(2), :any, :defp}},
+            {:_日本語識別子, {make_n_anon_args(2), :any, :def}}
           ],
           MyServact,
           "assets/js/LiveServerActions__Elixir.LiveServerActions.TestSupport.MyServact.d.ts",
@@ -227,7 +227,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact1,
                  %{
-                   a_server_action: {2, :any, :def}
+                   a_server_action: {make_n_anon_args(2), :any, :def}
                  },
                  ["LiveServerActions.HelpersTest.MyServact1", "a_server_action"],
                  ["arg1"],
@@ -250,7 +250,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact2,
                  %{
-                   a_server_action: {2, :any, :defp}
+                   a_server_action: {make_n_anon_args(2), :any, :defp}
                  },
                  ["LiveServerActions.HelpersTest.MyServact2", "a_server_action"],
                  ["arg1"],
@@ -276,7 +276,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact3,
                  %{
-                   a_server_action: {1, :any, :def}
+                   a_server_action: {make_n_anon_args(1), :any, :def}
                  },
                  ["LiveServerActions.HelpersTest.MyServact3", "a_server_action"],
                  [],
@@ -299,7 +299,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact4,
                  %{
-                   a_server_action: {1, :any, :defp}
+                   a_server_action: {make_n_anon_args(1), :any, :defp}
                  },
                  ["LiveServerActions.HelpersTest.MyServact4", "a_server_action"],
                  [],
@@ -326,7 +326,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact5,
                  %{
-                   a_server_action: {2, :any, :def}
+                   a_server_action: {make_n_anon_args(2), :any, :def}
                  },
                  ["LiveServerActions.HelpersTest.MyServact5", "a_server_action"],
                  ["arg1"],
@@ -348,7 +348,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact6,
                  %{
-                   a_server_action: {2, :any, :def}
+                   a_server_action: {make_n_anon_args(2), :any, :def}
                  },
                  ["LiveServerActions.HelpersTest.MyServact6", "a_server_action"],
                  ["2025-03-18T19:13:34.026831Z"],
@@ -372,7 +372,7 @@ defmodule LiveServerActions.HelpersTest do
                Helpers.handle_event(
                  MyServact7,
                  %{
-                   a_server_action: {3, :any, :def}
+                   a_server_action: {make_n_anon_args(3), :any, :def}
                  },
                  ["LiveServerActions.HelpersTest.MyServact7", "a_server_action"],
                  ["2025-03-18T19:13:34.026831Z", %{"dates" => ["2023-03-18T19:13:34.026831Z"]}],
@@ -412,7 +412,7 @@ defmodule LiveServerActions.HelpersTest do
         Helpers.handle_event(
           MyServact8,
           %{
-            a_server_action: {2, :any, :def}
+            a_server_action: {make_n_anon_args(2), :any, :def}
           },
           ["LiveServerActions.HelpersTest.MyServact9", "a_server_action"],
           ["arg1"],
@@ -437,7 +437,7 @@ defmodule LiveServerActions.HelpersTest do
                      Helpers.handle_event(
                        MyServact10,
                        %{
-                         a_server_action: {2, :any, :def}
+                         a_server_action: {make_n_anon_args(2), :any, :def}
                        },
                        ["LiveServerActions.HelpersTest.MyServact10", "a_server_action"],
                        ["arg1", "arg2"],
@@ -448,5 +448,36 @@ defmodule LiveServerActions.HelpersTest do
                      )
                    end
     end
+  end
+
+  defp make_n_anon_args(n) do
+    Enum.map(1..n, fn _ ->
+      {:%{}, [line: 48, column: 37], [fruit: {:fruit, [line: 48, column: 46], nil}]}
+    end)
+  end
+
+  def make_named_args(args) do
+    args
+    |> Enum.with_index()
+    |> Enum.map(fn {arg, i} ->
+      case rem(i, 3) do
+        0 ->
+          {String.to_atom(arg), [line: 48, column: 18], nil}
+
+        1 ->
+          {:=, [line: 48, column: 36],
+           [
+             {String.to_atom(arg), [line: 48, column: 27], nil},
+             {:%{}, [line: 48, column: 37], [fruit: {:fruit, [line: 48, column: 46], nil}]}
+           ]}
+
+        _ ->
+          {:=, [line: 48, column: 36],
+           [
+             {:%{}, [line: 48, column: 37], [fruit: {:fruit, [line: 48, column: 46], nil}]},
+             {String.to_atom(arg), [line: 48, column: 27], nil}
+           ]}
+      end
+    end)
   end
 end
