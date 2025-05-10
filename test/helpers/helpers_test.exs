@@ -171,11 +171,11 @@ defmodule LiveServerActions.HelpersTest do
     
     namespace ServerActions.LiveServerActions.TestSupport {
       interface MyServact {
-        pub_no_typespec: (any, any) => Promise<any>
-        priv_no_typespec: (any, any) => Promise<any>
-        pub_with_typespec: ({fruit: string, another_key: {foo: number, bar: string}}) => Promise<({error: string} | {quote: string, author: string, year: number})>
-        priv_with_typespec: ({fruit: string}) => Promise<({error: string} | {quote: string, author: string, year: number})>
-        _日本語識別子: (any) => Promise<any>
+        pub_no_typespec: (_1: any, _2: any) => Promise<any>
+        priv_no_typespec: (_1: any, _2: any) => Promise<any>
+        pub_with_typespec: (_1: {fruit: string, another_key: {foo: number, bar: string}}) => Promise<({error: string} | {quote: string, author: string, year: number})>
+        priv_with_typespec: (_1: {fruit: string}) => Promise<({error: string} | {quote: string, author: string, year: number})>
+        _日本語識別子: (_1: any) => Promise<any>
       }
     }
     

@@ -276,7 +276,7 @@ defmodule LiveServerActions.Helpers do
 
         case spec do
           nil ->
-            "#{name}: (#{1..(arity - 1) |> Enum.map(fn _ -> "#{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
+            "#{name}: (#{1..(arity - 1) |> Enum.map(fn i -> "_#{i}: #{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
 
           _ ->
             "#{name}: #{function_type_spec_to_ts_type(spec, typescript_fallback_type)}"
@@ -520,8 +520,10 @@ defmodule LiveServerActions.Helpers do
           )
 
         args =
-          Enum.map(arg_types, fn arg_type ->
-            type_to_ts_type(arg_type, typescript_fallback_type)
+          arg_types
+          |> Enum.with_index()
+          |> Enum.map(fn {arg_type, i} ->
+            "_#{i + 1}: " <> type_to_ts_type(arg_type, typescript_fallback_type)
           end)
 
         "(#{Enum.join(args, ", ")}) => Promise<#{ret}>"

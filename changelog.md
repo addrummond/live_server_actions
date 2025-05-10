@@ -1,5 +1,10 @@
 # LiveServerActions changelog
 
+## 0.3.1
+
+* Fix bug with syntax of function argument types in emission of `.d.ts` files
+  (e.g. `(number, number)` instead of `(arg1: number, arg2: number)`).
+
 ## 0.3.0
 
 * Fix bug with `null` arguments to server actions.
