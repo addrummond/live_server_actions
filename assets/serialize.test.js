@@ -4,23 +4,23 @@ import { deserializeSpecials, getSerializationSpecials } from "./serialize";
 describe("getSerializationSpecials", () => {
   test("should return null for a complex value with no special objects", () => {
     const data = {foo: 1, bar: 2, amp: [[[1,2,{foo: 19}]]]};
-    const specials = getSerializationSpecials(data);
+    const specials = getSerializationSpecials(data, null);
     expect(specials).toBeNull();
   });
 
   test("should serialize a Date object", () => {
     const date = new Date();
-    const specials = getSerializationSpecials(date);
+    const specials = getSerializationSpecials(date, null);
     expect(specials).toEqual({ type: 'Date' });
   });
 
   test("should serialize a Date object nested in an array", () => {
-    const specials = getSerializationSpecials([1, new Date(), 2]);
+    const specials = getSerializationSpecials([1, new Date(), 2], null);
     expect(specials).toEqual({ type: 'id', subs: [{ path: 1, type: 'Date' }] });
   });
 
   test("should serialize a Date object nested in an object", () => {
-    const specials = getSerializationSpecials({foo: 1, bar: new Date()});
+    const specials = getSerializationSpecials({foo: 1, bar: new Date()}, null);
     expect(specials).toEqual({ type: 'id', subs: [{ path: "bar", type: 'Date' }] });
   });
 
@@ -30,7 +30,8 @@ describe("getSerializationSpecials", () => {
       [
         {foo: 1, bar: [5, new Date()]},
         {baz: [2, {qux: new Date(), fuzz: new Map([["date", thedate]])}]}
-      ]
+      ],
+      null
     );
     expect(specials).toEqual(
       {
@@ -97,7 +98,8 @@ describe("getSerializationSpecials", () => {
       [
         {foo: 1, bar: [5, "notadate"]},
         {baz: [2, {qux: "notadate"}]}
-      ]
+      ],
+      null
     );
     expect(specials).toBeNull()
   });
@@ -108,7 +110,7 @@ describe("getSerializationSpecials", () => {
       bar: { value: new Date(), enumerable: true },
       nonenum: { value: new Date(), enumerable: false }
     });
-    const specials = getSerializationSpecials(data);
+    const specials = getSerializationSpecials(data, null);
     expect(specials).toEqual({ type: 'id', subs: [{ path: "bar", type: 'Date' }] });
   })
 
@@ -120,7 +122,7 @@ describe("getSerializationSpecials", () => {
       ])
     }
 
-    const specials = getSerializationSpecials(data);
+    const specials = getSerializationSpecials(data, null);
     expect(specials).toEqual(
       {
         subs: [

@@ -68,7 +68,7 @@ const liveServerActionListener = h => e => {
     module_and_func: e.detail.moduleAndFunc,
     args: e.detail.args,
   };
-  const specials = e.detail.args.map(a => getSerializationSpecials(a));
+  const specials = e.detail.args.map(a => getSerializationSpecials(a, null));
   if (specials.some(s => s !== null))
     event.specials = specials;
   const eventId = h.pushEvent(`live-server-action`, event, e.detail.replyHandler);
