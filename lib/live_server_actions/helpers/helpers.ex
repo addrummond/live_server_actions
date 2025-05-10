@@ -293,7 +293,7 @@ defmodule LiveServerActions.Helpers do
             "#{name}: (#{argument_names |> Enum.with_index() |> Enum.map(fn {name, i} -> "#{valid_js_identifier_or_nil(name) || "_#{i + 1}"}: #{typescript_fallback_type}" end) |> Enum.join(", ")}) => Promise<#{typescript_fallback_type}>"
 
           _ ->
-            "#{name}: #{function_type_spec_to_ts_type(spec, argument_names, typescript_fallback_type)}"
+            "#{name}: #{function_type_spec_to_ts_type(module, name, spec, argument_names, typescript_fallback_type)}"
         end
       end)
       |> Enum.join("\n")
@@ -521,7 +521,13 @@ defmodule LiveServerActions.Helpers do
     |> String.trim_trailing("\n")
   end
 
-  defp function_type_spec_to_ts_type(spec, argument_names, typescript_fallback_type) do
+  defp function_type_spec_to_ts_type(
+         module,
+         sa_name,
+         spec,
+         argument_names,
+         typescript_fallback_type
+       ) do
     case spec do
       {:type, _, :fun, [{:type, _, :product, [_socket_type | arg_types]}, return_type]} ->
         # We don't check that socket_type is Phoenix.LiveView.Socket because
@@ -532,6 +538,10 @@ defmodule LiveServerActions.Helpers do
             strip_socket_tuple_from_return_type(return_type),
             typescript_fallback_type
           )
+
+        if length(arg_types) != length(argument_names) do
+          raise "Wrong number of arguments in type spec for server action #{sa_name} in module #{module}"
+        end
 
         args =
           arg_types
