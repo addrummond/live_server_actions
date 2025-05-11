@@ -22,7 +22,7 @@ Inspired by Next.js
 
 * Add the following dependency to `mix.exs`:
 ```elixir
-{:live_server_actions, "~> 0.3.0"}
+{:live_server_actions, "~> 0.3.2"}
 ```
 * Add the following dependency to your `package.json`:
 ```json
